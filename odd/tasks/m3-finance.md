@@ -35,7 +35,7 @@ Non-goals (not requested): budgets, advanced reports/charts, multi-currency conv
 - F7 (S13, S14) — Transaction repository (validation, CRUD, queries, balance impact) + tests. Route: inline. Commit: b20436f
 - F8 (S15) — Server actions + FormData form actions + tests. Route: inline. Commit: 3d2f59b
 - F9 (S15) — Finance views (summary, accounts, categories, transactions) + navigation. Route: inline. Commit: b566284
-- F10 (S16) — README update + final verification. Route: inline. Commit: (pending)
+- F10 (S16) — README update + final verification. Route: inline. Commit: 32efba4
 
 ## Log
 
