@@ -51,6 +51,9 @@ export async function createTaskFormAction(
       projectId: formProjectId(formData),
       priority: formString(formData, "priority") as repo.TaskPriority | undefined,
       dueDate: formString(formData, "dueDate") || null,
+      scheduleDate: formString(formData, "scheduleDate") || null,
+      startTime: formString(formData, "startTime") || null,
+      endTime: formString(formData, "endTime") || null,
     }),
   );
 }
@@ -70,6 +73,15 @@ export async function updateTaskFormAction(
       dueDate: formData.has("dueDate")
         ? formString(formData, "dueDate") || null
         : undefined,
+      scheduleDate: formData.has("scheduleDate")
+        ? formString(formData, "scheduleDate") || null
+        : undefined,
+      startTime: formData.has("startTime")
+        ? formString(formData, "startTime") || null
+        : undefined,
+      endTime: formData.has("endTime")
+        ? formString(formData, "endTime") || null
+        : undefined,
     }),
   );
 }
@@ -86,6 +98,14 @@ export async function setTaskStatusFormAction(formData: FormData): Promise<void>
 
 export async function deleteTaskFormAction(formData: FormData): Promise<void> {
   await submit(() => repo.deleteTask(db, formNumber(formData, "id") ?? Number.NaN));
+}
+
+/** useActionState variant for the calendar dialog: reports success/failure. */
+export async function deleteTaskFormActionState(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  return submit(() => repo.deleteTask(db, formNumber(formData, "id") ?? Number.NaN));
 }
 
 /* ---------------------------------- projects -------------------------------- */

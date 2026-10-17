@@ -53,9 +53,12 @@ describe("tasks table (S3)", () => {
     expect(row.projectId).toBeNull();
     expect(row.notes).toBe("");
     expect(row.dueDate).toBeNull();
+    expect(row.scheduleDate).toBeNull();
+    expect(row.startTime).toBeNull();
+    expect(row.endTime).toBeNull();
   });
 
-  it("stores all fields including optional project and due date", () => {
+  it("stores all fields including optional project, due date and scheduling", () => {
     const project = db
       .insert(projects)
       .values({ name: "Home" })
@@ -70,6 +73,9 @@ describe("tasks table (S3)", () => {
         status: "in_progress",
         priority: "high",
         dueDate: "2026-01-15",
+        scheduleDate: "2026-01-17",
+        startTime: "09:30",
+        endTime: "11:00",
       })
       .run();
 
@@ -81,6 +87,9 @@ describe("tasks table (S3)", () => {
       status: "in_progress",
       priority: "high",
       dueDate: "2026-01-15",
+      scheduleDate: "2026-01-17",
+      startTime: "09:30",
+      endTime: "11:00",
     });
   });
 

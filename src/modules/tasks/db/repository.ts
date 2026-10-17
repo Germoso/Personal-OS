@@ -1,4 +1,4 @@
-import { and, eq, gte, isNull, lte, ne, sql, type SQL } from "drizzle-orm";
+import { and, eq, gte, isNull, lte, ne, or, sql, type SQL } from "drizzle-orm";
 
 import type { Db } from "@/db/client";
 
@@ -26,6 +26,7 @@ export class ValidationError extends Error {}
 export class NotFoundError extends Error {}
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 function oneOf<T extends string>(
   value: unknown,
@@ -64,6 +65,50 @@ function normalizeDueDate(value: unknown): string | null | undefined {
     );
   }
   return value;
+}
+
+function normalizeScheduleDate(value: unknown): string | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === null || value === "") return null;
+  if (typeof value !== "string" || !ISO_DATE.test(value) || !isValidIsoDate(value)) {
+    throw new ValidationError(
+      `Invalid schedule date: ${JSON.stringify(value)}. Expected YYYY-MM-DD.`,
+    );
+  }
+  return value;
+}
+
+function normalizeScheduleTime(
+  value: unknown,
+  field: string,
+): string | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === null || value === "") return null;
+  if (typeof value !== "string" || !TIME.test(value)) {
+    throw new ValidationError(
+      `Invalid ${field}: ${JSON.stringify(value)}. Expected HH:MM (24h).`,
+    );
+  }
+  return value;
+}
+
+/**
+ * A task's time window is optional but must be well-formed: an end time
+ * requires a start time, and a start time requires a schedule date (a timed
+ * task without a date cannot be placed on the grid). end <= start is allowed:
+ * the window ends the next day (midnight crossing).
+ */
+function validateScheduleWindow(
+  scheduleDate: string | null | undefined,
+  startTime: string | null | undefined,
+  endTime: string | null | undefined,
+): void {
+  if (endTime && !startTime) {
+    throw new ValidationError("An end time requires a start time.");
+  }
+  if (startTime && !scheduleDate) {
+    throw new ValidationError("A start time requires a schedule date.");
+  }
 }
 
 function normalizeColor(value: unknown): string | undefined {
@@ -194,6 +239,9 @@ export interface CreateTaskInput {
   status?: TaskStatus;
   priority?: TaskPriority;
   dueDate?: string | null;
+  scheduleDate?: string | null;
+  startTime?: string | null;
+  endTime?: string | null;
 }
 
 function resolveProjectId(db: Db, value: unknown): number | null | undefined {
@@ -211,6 +259,11 @@ export function createTask(db: Db, input: CreateTaskInput): Task {
       ? undefined
       : resolveProjectId(db, input.projectId);
 
+  const scheduleDate = normalizeScheduleDate(input.scheduleDate);
+  const startTime = normalizeScheduleTime(input.startTime, "start time");
+  const endTime = normalizeScheduleTime(input.endTime, "end time");
+  validateScheduleWindow(scheduleDate, startTime, endTime);
+
   const row = db
     .insert(tasks)
     .values({
@@ -224,6 +277,9 @@ export function createTask(db: Db, input: CreateTaskInput): Task {
           ? undefined
           : oneOf(input.priority, TASK_PRIORITIES, "priority"),
       dueDate: normalizeDueDate(input.dueDate),
+      scheduleDate,
+      startTime,
+      endTime,
       updatedAt: nowIso(),
     })
     .returning()
@@ -239,10 +295,13 @@ export interface UpdateTaskInput {
   status?: TaskStatus;
   priority?: TaskPriority;
   dueDate?: string | null;
+  scheduleDate?: string | null;
+  startTime?: string | null;
+  endTime?: string | null;
 }
 
 export function updateTask(db: Db, input: UpdateTaskInput): Task {
-  requireTask(db, input.id);
+  const existing = requireTask(db, input.id);
 
   const patch: Partial<typeof tasks.$inferInsert> = { updatedAt: nowIso() };
   if (input.title !== undefined) patch.title = requiredText(input.title, "title");
@@ -255,6 +314,25 @@ export function updateTask(db: Db, input: UpdateTaskInput): Task {
   if (input.priority !== undefined)
     patch.priority = oneOf(input.priority, TASK_PRIORITIES, "priority");
   if (input.dueDate !== undefined) patch.dueDate = normalizeDueDate(input.dueDate);
+
+  // The schedule window is a pair: resolve against the existing row when only
+  // one side is patched, so a partial form cannot unset the other side.
+  const nextSchedule =
+    input.scheduleDate !== undefined
+      ? normalizeScheduleDate(input.scheduleDate)
+      : existing.scheduleDate;
+  const nextStart =
+    input.startTime !== undefined
+      ? normalizeScheduleTime(input.startTime, "start time")
+      : existing.startTime;
+  const nextEnd =
+    input.endTime !== undefined
+      ? normalizeScheduleTime(input.endTime, "end time")
+      : existing.endTime;
+  validateScheduleWindow(nextSchedule, nextStart, nextEnd);
+  patch.scheduleDate = nextSchedule;
+  patch.startTime = nextStart;
+  patch.endTime = nextEnd;
 
   return db
     .update(tasks)
@@ -394,5 +472,49 @@ export function listTasksByDueDateRange(
       ),
     )
     .orderBy(tasks.dueDate, priorityRank, tasks.createdAt)
+    .all();
+}
+
+/**
+ * Tasks visible in the calendar week [startDate, endDate]: tasks scheduled on
+ * a date inside the range (whether timed or all-day), plus tasks without a
+ * schedule date whose due date falls inside the range — those show up as
+ * unscheduled all-day tasks on their due date. Done tasks stay out. Rejects an
+ * inverted range.
+ */
+export function listTasksForCalendar(
+  db: Db,
+  startDate: string,
+  endDate: string,
+): Task[] {
+  const start = normalizeDueDate(startDate);
+  const end = normalizeDueDate(endDate);
+  if (typeof start !== "string" || typeof end !== "string") {
+    throw new ValidationError(
+      `Invalid range: ${JSON.stringify(startDate)} to ${JSON.stringify(endDate)}.`,
+    );
+  }
+  if (end < start) {
+    throw new ValidationError(
+      `Invalid range: start ${start} is after end ${end}.`,
+    );
+  }
+  return db
+    .select()
+    .from(tasks)
+    .where(
+      and(
+        or(
+          and(gte(tasks.scheduleDate, start), lte(tasks.scheduleDate, end)),
+          and(
+            isNull(tasks.scheduleDate),
+            gte(tasks.dueDate, start),
+            lte(tasks.dueDate, end),
+          ),
+        ),
+        ne(tasks.status, "done"),
+      ),
+    )
+    .orderBy(tasks.scheduleDate, tasks.dueDate, tasks.createdAt, tasks.id)
     .all();
 }

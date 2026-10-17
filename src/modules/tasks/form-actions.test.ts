@@ -21,7 +21,9 @@ import {
   createTaskFormAction,
   deleteProjectFormAction,
   deleteTaskFormAction,
+  deleteTaskFormActionState,
   setTaskStatusFormAction,
+  updateTaskFormAction,
 } from "./form-actions";
 
 function fd(entries: Record<string, string>): FormData {
@@ -55,6 +57,55 @@ describe("createTaskFormAction (S3, S5)", () => {
     expect(repo.listInbox(db)).toHaveLength(1);
   });
 
+  it("creates a scheduled task from the form (S9)", async () => {
+    const state = await createTaskFormAction(
+      { ok: false },
+      fd({
+        title: "Bloque",
+        scheduleDate: "2026-03-04",
+        startTime: "09:30",
+        endTime: "10:30",
+      }),
+    );
+
+    expect(state).toEqual({ ok: true });
+    expect(repo.listInbox(db)[0]).toMatchObject({
+      title: "Bloque",
+      scheduleDate: "2026-03-04",
+      startTime: "09:30",
+      endTime: "10:30",
+    });
+  });
+
+  it("clears the schedule window when the fields come in blank", async () => {
+    const task = repo.createTask(db, {
+      title: "Agendada",
+      scheduleDate: "2026-03-04",
+      startTime: "09:00",
+      endTime: "10:00",
+    });
+
+    const state = await updateTaskFormAction(
+      { ok: false },
+      fd({ id: String(task.id), scheduleDate: "", startTime: "", endTime: "" }),
+    );
+
+    expect(state).toEqual({ ok: true });
+    const reloaded = repo.listTasks(db).find((t) => t.id === task.id);
+    expect(reloaded).toMatchObject({ scheduleDate: null, startTime: null, endTime: null });
+  });
+
+  it("reports an inconsistent schedule window from the form", async () => {
+    const state = await createTaskFormAction(
+      { ok: false },
+      fd({ title: "Rota", startTime: "10:00" }),
+    );
+
+    expect(state.ok).toBe(false);
+    expect(state.error).toMatch(/schedule date/i);
+    expect(repo.listTasks(db)).toEqual([]);
+  });
+
   it("returns the validation message and stores nothing", async () => {
     const state = await createTaskFormAction({ ok: false }, fd({ title: "   " }));
 
@@ -85,6 +136,14 @@ describe("task command form actions (S3, S5)", () => {
     await deleteTaskFormAction(fd({ id: String(task.id) }));
     expect(repo.listTasks(db)).toEqual([]);
     expect(revalidatePath).toHaveBeenCalledTimes(2);
+  });
+
+  it("deletes with the useActionState variant used by the calendar dialog", async () => {
+    const task = repo.createTask(db, { title: "Desde el grid" });
+
+    const state = await deleteTaskFormActionState({ ok: false }, fd({ id: String(task.id) }));
+    expect(state).toEqual({ ok: true });
+    expect(repo.listTasks(db)).toEqual([]);
   });
 
   it("ignores an invalid status without touching the task", async () => {

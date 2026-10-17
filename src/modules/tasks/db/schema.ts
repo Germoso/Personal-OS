@@ -37,10 +37,17 @@ export const tasks = sqliteTable(
       .default("medium"),
     // ISO date (YYYY-MM-DD), optional
     dueDate: text("due_date"),
+    // Optional calendar scheduling: the day the task is placed on the time
+    // grid and its window (HH:MM 24h, local). Both times null = all-day task;
+    // end <= start means the window ends the next day (midnight crossing).
+    scheduleDate: text("schedule_date"),
+    startTime: text("start_time"),
+    endTime: text("end_time"),
     ...timestamps,
   },
   (table) => [
     index("tasks_project_id_idx").on(table.projectId),
     index("tasks_due_date_idx").on(table.dueDate),
+    index("tasks_schedule_date_idx").on(table.scheduleDate),
   ],
 );
