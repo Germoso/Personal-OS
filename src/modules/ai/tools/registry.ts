@@ -24,6 +24,8 @@ export interface ToolDef {
   parameters: Record<string, unknown>;
   /** Deletes/archives/removes ask for human confirmation (S33). */
   destructive: boolean;
+  /** False for read-only tools (list/get/balance); undefined means mutating. */
+  mutates?: boolean;
   /** Repository function name, for test pinning and debug output. */
   operation: string;
   /** Runs the operation with raw JSON args; validation lives in the repos. */
@@ -90,6 +92,7 @@ export const AI_TOOLS: ToolDef[] = [
     description: "List all projects with their status (active/archived).",
     parameters: obj("ListProjects", {}),
     destructive: false,
+    mutates: false,
     operation: "listProjects",
     run: () => tasksRepo.listProjects(db),
   },
@@ -146,6 +149,7 @@ export const AI_TOOLS: ToolDef[] = [
       dueDate: prop("string", "YYYY-MM-DD"),
     }),
     destructive: false,
+    mutates: false,
     operation: "listTasks",
     run: (a) => {
       const filters: { status?: tasksRepo.TaskStatus; projectId?: number; dueDate?: string } = {};
@@ -246,6 +250,7 @@ export const AI_TOOLS: ToolDef[] = [
       end: prop("string", "End date YYYY-MM-DD"),
     }),
     destructive: false,
+    mutates: false,
     operation: "listEventsBetween",
     run: (a) => {
       const defaultEnd = new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10);
@@ -320,6 +325,7 @@ export const AI_TOOLS: ToolDef[] = [
     description: "List finance accounts. Optional status: active|archived.",
     parameters: obj("ListAccounts", { status: prop("string", "active | archived") }),
     destructive: false,
+    mutates: false,
     operation: "listAccounts",
     run: (a) => financeRepo.listAccounts(db, str(a, "status") as never),
   },
@@ -399,6 +405,7 @@ export const AI_TOOLS: ToolDef[] = [
     description: "List transaction categories. Optional kind: income|expense.",
     parameters: obj("ListCategories", { kind: prop("string", "income | expense") }),
     destructive: false,
+    mutates: false,
     operation: "listCategories",
     run: (a) => financeRepo.listCategories(db, str(a, "kind") as never),
   },
@@ -456,6 +463,7 @@ export const AI_TOOLS: ToolDef[] = [
     description: "List recent transactions (newest first). No filters in MVP.",
     parameters: obj("ListTransactions", {}),
     destructive: false,
+    mutates: false,
     operation: "recentTransactions",
     run: () => financeRepo.recentTransactions(db, 50),
   },
@@ -521,6 +529,7 @@ export const AI_TOOLS: ToolDef[] = [
     description: "Current balance of one account, in integer cents.",
     parameters: obj("AccountBalance", { accountId: prop("integer", "Account id") }, ["accountId"]),
     destructive: false,
+    mutates: false,
     operation: "accountBalance",
     run: (a) => financeRepo.accountBalance(db, num(a, "accountId")),
   },
@@ -529,6 +538,7 @@ export const AI_TOOLS: ToolDef[] = [
     description: "Total balance across all active accounts, in integer cents.",
     parameters: obj("TotalBalance", {}),
     destructive: false,
+    mutates: false,
     operation: "totalBalance",
     run: () => financeRepo.totalBalance(db),
   },
@@ -539,6 +549,7 @@ export const AI_TOOLS: ToolDef[] = [
     description: "List all ingredients (the shopping list). available=true means you have it at home.",
     parameters: obj("ListIngredients", {}),
     destructive: false,
+    mutates: false,
     operation: "listIngredients",
     run: () => kitchenRepo.listIngredients(db),
   },
@@ -609,6 +620,7 @@ export const AI_TOOLS: ToolDef[] = [
     description: "List all recipes.",
     parameters: obj("ListRecipes", {}),
     destructive: false,
+    mutates: false,
     operation: "listRecipes",
     run: () => kitchenRepo.listRecipes(db),
   },
@@ -617,6 +629,7 @@ export const AI_TOOLS: ToolDef[] = [
     description: "List recipes with cookability: each shows which of its ingredients are missing (not available).",
     parameters: obj("ListRecipesWithCookability", {}),
     destructive: false,
+    mutates: false,
     operation: "listRecipesWithCookability",
     run: () => kitchenRepo.listRecipesWithCookability(db),
   },
@@ -676,6 +689,7 @@ export const AI_TOOLS: ToolDef[] = [
     description: "List the ingredients of one recipe (with names and units).",
     parameters: obj("ListRecipeIngredients", { recipeId: prop("integer", "Recipe id") }, ["recipeId"]),
     destructive: false,
+    mutates: false,
     operation: "listRecipeIngredients",
     run: (a) => kitchenRepo.listRecipeIngredients(db, num(a, "recipeId")),
   },
