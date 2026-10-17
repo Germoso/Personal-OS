@@ -15,6 +15,13 @@
       "when": 1792227806136,
       "tag": "0001_slimy_loa",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1792229842139,
+      "tag": "0002_even_jack_murdock",
+      "breakpoints": true
     }
   ]
 }
