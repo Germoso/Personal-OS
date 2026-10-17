@@ -18,6 +18,7 @@ import * as repo from "./db/repository";
 import {
   createEventFormAction,
   deleteEventFormAction,
+  deleteEventFormActionState,
   updateEventFormAction,
 } from "./form-actions";
 
@@ -84,6 +85,24 @@ describe("createEventFormAction (S7)", () => {
     expect(state.ok).toBe(false);
     expect(state.error).toMatch(/start time/i);
   });
+
+  it("creates a midnight-crossing event from the form", async () => {
+    const state = await createEventFormAction(
+      { ok: false },
+      fd({
+        title: "Concierto",
+        date: "2026-02-14",
+        startTime: "22:00",
+        endTime: "02:00",
+      }),
+    );
+
+    expect(state).toEqual({ ok: true });
+    expect(repo.getEvent(db, repo.listEventsBetween(db, "2026-02-14", "2026-02-14")[0].id)).toMatchObject({
+      startTime: "22:00",
+      endTime: "02:00",
+    });
+  });
 });
 
 describe("updateEventFormAction (S7)", () => {
@@ -136,5 +155,16 @@ describe("deleteEventFormAction (S7)", () => {
     await deleteEventFormAction(fd({ id: String(event.id) }));
     expect(repo.listEventsBetween(db, "2000-01-01", "2099-12-31")).toEqual([]);
     expect(revalidatePath).toHaveBeenCalledWith("/", "layout");
+  });
+
+  it("deletes with the useActionState variant used by the dialog", async () => {
+    const event = repo.createEvent(db, { title: "Del grid", date: "2026-02-14" });
+
+    const state = await deleteEventFormActionState(
+      { ok: false },
+      fd({ id: String(event.id) }),
+    );
+    expect(state).toEqual({ ok: true });
+    expect(repo.listEventsBetween(db, "2000-01-01", "2099-12-31")).toEqual([]);
   });
 });

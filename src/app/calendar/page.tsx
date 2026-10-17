@@ -3,8 +3,12 @@ import { connection } from "next/server";
 
 import { db } from "@/db";
 import { addDaysIso, isValidIsoDate, localTodayIso, weekDays, weekRange } from "@/lib/date";
-import { EventForm } from "@/modules/calendar/components/event-form";
 import * as eventRepo from "@/modules/calendar/db/repository";
+import {
+  WeekGrid,
+  type DayGrid,
+} from "@/modules/calendar/components/week-grid";
+import type { CalendarItem } from "@/modules/calendar/types";
 import * as taskRepo from "@/modules/tasks/db/repository";
 
 // Local SQLite reads are sub-millisecond: render on demand, never prerender stale data.
@@ -22,27 +26,60 @@ export default async function CalendarPage({
     week && isValidIsoDate(week) ? week : localTodayIso();
   const { start, end } = weekRange(anchor);
   const days = weekDays(anchor);
+  const today = localTodayIso();
 
   const events = eventRepo.listEventsBetween(db, start, end);
-  const tasks = taskRepo.listTasksByDueDateRange(db, start, end);
+  const tasks = taskRepo.listTasksForCalendar(db, start, end);
 
-  const eventsByDay = new Map<string, typeof events>();
-  const tasksByDay = new Map<string, typeof tasks>();
-  for (const day of days) {
-    eventsByDay.set(day, []);
-    tasksByDay.set(day, []);
-  }
+  // Bucket every item under its effective calendar day: day for the date,
+  // all-day band vs hour grid depending on whether it has a time window.
+  const byDay = new Map<string, DayGrid>(
+    days.map((day) => [
+      day,
+      { date: day, isToday: day === today, allDay: [], timed: [] },
+    ]),
+  );
+
+  const push = (item: CalendarItem) => {
+    const dayGrid = byDay.get(item.date);
+    if (!dayGrid) return;
+    (item.allDay ? dayGrid.allDay : dayGrid.timed).push(item);
+  };
+
   for (const event of events) {
-    const bucket = eventsByDay.get(event.date);
-    if (bucket) bucket.push(event);
-  }
-  for (const task of tasks) {
-    if (task.dueDate) {
-      const bucket = tasksByDay.get(task.dueDate);
-      if (bucket) bucket.push(task);
-    }
+    push({
+      key: `event-${event.id}`,
+      kind: "event",
+      id: event.id,
+      title: event.title,
+      notes: event.notes,
+      date: event.date,
+      allDay: event.startTime === null,
+      startTime: event.startTime,
+      endTime: event.endTime,
+    });
   }
 
+  for (const task of tasks) {
+    // Scheduled tasks live on their schedule date; unscheduled ones fall back
+    // to their due date (all-day band), preserving the old weekly view.
+    const date = task.scheduleDate ?? task.dueDate;
+    if (!date) continue;
+    const timed = task.startTime !== null;
+    push({
+      key: `task-${task.id}`,
+      kind: "task",
+      id: task.id,
+      title: task.title,
+      notes: task.notes,
+      date,
+      allDay: !timed,
+      startTime: task.startTime,
+      endTime: task.endTime,
+    });
+  }
+
+  const dayGrids = days.map((day) => byDay.get(day)!);
   const prevWeek = addDaysIso(start, -7);
   const nextWeek = addDaysIso(start, 7);
 
@@ -63,7 +100,7 @@ export default async function CalendarPage({
             ← Anterior
           </Link>
           <Link
-            href={`/calendar?week=${localTodayIso()}`}
+            href={`/calendar?week=${today}`}
             className="rounded border border-neutral-700 px-3 py-1.5 text-neutral-300 hover:text-neutral-100"
           >
             Hoy
@@ -77,60 +114,7 @@ export default async function CalendarPage({
         </nav>
       </header>
 
-      <EventForm defaultDate={anchor} />
-
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-7">
-        {days.map((day) => {
-          const dayEvents = eventsByDay.get(day) ?? [];
-          const dayTasks = tasksByDay.get(day) ?? [];
-          const isToday = day === localTodayIso();
-          return (
-            <div
-              key={day}
-              className={`flex flex-col gap-2 rounded-lg border p-3 ${
-                isToday ? "border-neutral-500" : "border-neutral-800"
-              } bg-neutral-900`}
-            >
-              <div className="text-xs font-semibold uppercase tracking-wide text-neutral-400">
-                {day.slice(5)}
-              </div>
-              {dayEvents.length === 0 && dayTasks.length === 0 ? (
-                <p className="text-xs text-neutral-600">—</p>
-              ) : null}
-              <ul className="flex flex-col gap-1.5">
-                {dayEvents.map((event) => (
-                  <li
-                    key={event.id}
-                    className="rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5 text-xs"
-                  >
-                    <p className="font-medium">{event.title}</p>
-                    {event.startTime ? (
-                      <p className="text-neutral-500">
-                        {event.startTime}
-                        {event.endTime ? `–${event.endTime}` : ""}
-                      </p>
-                    ) : (
-                      <p className="text-neutral-500">Todo el día</p>
-                    )}
-                    {event.notes ? (
-                      <p className="mt-0.5 text-neutral-600">{event.notes}</p>
-                    ) : null}
-                  </li>
-                ))}
-                {dayTasks.map((task) => (
-                  <li
-                    key={`task-${task.id}`}
-                    className="rounded border border-dashed border-neutral-700 bg-neutral-950 px-2 py-1.5 text-xs"
-                  >
-                    <p className="font-medium text-neutral-300">{task.title}</p>
-                    <p className="text-neutral-500">Tarea</p>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          );
-        })}
-      </div>
+      <WeekGrid days={dayGrids} />
     </section>
   );
 }

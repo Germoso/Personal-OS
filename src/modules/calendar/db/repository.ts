@@ -1,4 +1,4 @@
-import { and, asc, eq, gte, lte, sql, type SQL } from "drizzle-orm";
+import { and, asc, eq, gte, lte, sql } from "drizzle-orm";
 
 import type { Db } from "@/db/client";
 
@@ -52,15 +52,17 @@ function normalizeTime(value: unknown, field: string): string | null | undefined
   return value;
 }
 
+/**
+ * The time window is optional but well-formed: an end time requires a start
+ * time. end <= start is allowed — the event ends the next day (midnight
+ * crossing), e.g. 22:00 → 02:00 or 09:00 → 09:00 (24h).
+ */
 function validateWindow(
   startTime: string | null | undefined,
   endTime: string | null | undefined,
 ): void {
   if (endTime && !startTime) {
     throw new ValidationError("An end time requires a start time.");
-  }
-  if (startTime && endTime && endTime <= startTime) {
-    throw new ValidationError("The end time must be after the start time.");
   }
 }
 

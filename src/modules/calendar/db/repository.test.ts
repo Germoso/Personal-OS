@@ -67,7 +67,7 @@ describe("createEvent (S7)", () => {
     expect(repo.listEventsBetween(db, "2000-01-01", "2099-12-31")).toEqual([]);
   });
 
-  it("rejects malformed times, an end without a start, and an inverted window", () => {
+  it("rejects malformed times and an end without a start", () => {
     const base = { title: "A", date: "2026-02-14" };
 
     expect(() => repo.createEvent(db, { ...base, startTime: "9:30" })).toThrow(/time/i);
@@ -75,13 +75,25 @@ describe("createEvent (S7)", () => {
     expect(() => repo.createEvent(db, { ...base, endTime: "10:00" })).toThrow(
       /start time/i,
     );
-    expect(() =>
-      repo.createEvent(db, { ...base, startTime: "10:00", endTime: "09:00" }),
-    ).toThrow(/after/i);
-    expect(() =>
-      repo.createEvent(db, { ...base, startTime: "10:00", endTime: "10:00" }),
-    ).toThrow(/after/i);
     expect(repo.listEventsBetween(db, "2000-01-01", "2099-12-31")).toEqual([]);
+  });
+
+  it("allows an end time that crosses midnight (end <= start = next day)", () => {
+    const overnight = repo.createEvent(db, {
+      title: "Noche",
+      date: "2026-02-14",
+      startTime: "22:00",
+      endTime: "02:00",
+    });
+    const fullDay = repo.createEvent(db, {
+      title: "Todo el día y más",
+      date: "2026-02-15",
+      startTime: "09:00",
+      endTime: "09:00",
+    });
+
+    expect(overnight).toMatchObject({ startTime: "22:00", endTime: "02:00" });
+    expect(fullDay).toMatchObject({ startTime: "09:00", endTime: "09:00" });
   });
 });
 
@@ -139,7 +151,7 @@ describe("updateEvent (S7)", () => {
     expect(repo.getEvent(db, event.id).date).toBe("2026-02-14");
   });
 
-  it("rejects an inverted window on update", () => {
+  it("allows the end time to cross midnight on update", () => {
     const event = repo.createEvent(db, {
       title: "Con hora",
       date: "2026-02-14",
@@ -147,10 +159,21 @@ describe("updateEvent (S7)", () => {
       endTime: "10:00",
     });
 
-    expect(() => repo.updateEvent(db, { id: event.id, endTime: "08:00" })).toThrow(
-      /after/i,
+    const updated = repo.updateEvent(db, { id: event.id, endTime: "08:00" });
+    expect(updated.endTime).toBe("08:00");
+  });
+
+  it("still rejects an end time without a start time on update", () => {
+    const event = repo.createEvent(db, {
+      title: "Con hora",
+      date: "2026-02-14",
+      startTime: "09:00",
+      endTime: "10:00",
+    });
+
+    expect(() => repo.updateEvent(db, { id: event.id, startTime: null })).toThrow(
+      /start time/i,
     );
-    expect(repo.getEvent(db, event.id).endTime).toBe("10:00");
   });
 });
 

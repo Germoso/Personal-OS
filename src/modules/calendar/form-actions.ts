@@ -70,3 +70,13 @@ export async function deleteEventFormAction(formData: FormData): Promise<void> {
     repo.deleteEvent(db, formNumber(formData, "id") ?? Number.NaN),
   );
 }
+
+/** useActionState variant for the calendar dialog: reports success/failure. */
+export async function deleteEventFormActionState(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  return submit(() =>
+    repo.deleteEvent(db, formNumber(formData, "id") ?? Number.NaN),
+  );
+}
