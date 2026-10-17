@@ -37,6 +37,10 @@ S38 — Verification: unit/integration tests for schema+model, repositories, set
 - A5 (S35) — Tool registry mapping to existing server actions + registry tests (each tool resolves to a real server action). Route: inline. Commit: b91a3f5
 - A6 (S33, S36) — Orchestration loop with autonomy gate + confirmation flow + tests with stub LLM. Route: inline. Commit: a2e4df9
 - A7 (S37, S38) — Server action (send message, confirm/reject, settings) + form action + tests. Route: inline. Commit: d375297
+- A8 (S37) — Floating chat panel (client component) mounted in the root layout + autonomy UI + confirm/cancel bar. Route: inline (gentle-ai-worker delegation failed twice this session without writing files). Commit: 6efec90
+- A9 (S30-S38) — README (M5 section, env vars, autonomy levels, structure, roadmap) + .env.local left to the user (harness blocks writes to .env.local) + final verification: 204 tests, tsc, eslint, next build + smoke. Route: inline. Commit: (pending)
+- Note: drizzle-meta files for migration 0004 and the feature doc were committed out-of-band. Commit: 5b56fa0
+e2e graphql is (graphql)
 - A8 (S37) — Floating chat panel UI + layout integration + confirmation/settings UI. Route: inline. Commit: (ui commit)
 - A9 (S38) — README update + final verification (tests, build, smoke). Route: inline. Commit: (docs commit)
 

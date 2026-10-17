@@ -4,7 +4,7 @@ A local-first web app to run your personal life: projects, tasks and — in late
 milestones — a calendar and finances. All data lives in a single SQLite file on
 your machine. No accounts, no cloud.
 
-**Status:** milestone 4 (M4) — kitchen (ingredients, recipes, shopping list, pantry, cookability) on top of M1+M2+M3.
+**Status:** milestone 5 (M5) — AI assistant: a floating chat panel that runs your personal OS by natural language (tasks, calendar, finance, kitchen) via a local LLM, with configurable autonomy and a persistent local conversation history.
 
 ## Stack
 
@@ -16,6 +16,7 @@ your machine. No accounts, no cloud.
 
 - Node.js 24+ and npm
 - No database server: SQLite is embedded
+- A Runware API key for the AI assistant (see below). The rest of the app works without it; the chat panel shows an error until the key is set.
 
 ## Getting started
 
@@ -27,6 +28,29 @@ npm run dev          # http://localhost:3000
 
 `DATABASE_PATH` overrides the database location (default
 `data/personal-os.db`, git-ignored).
+
+## AI assistant (M5)
+
+A floating chat panel (bottom-right, every page) lets you ask for things in
+natural Spanish and the assistant performs real operations through the LLM
+tools. **`RUNWARE_API_KEY`** (plus optional `RUNWARE_BASE_URL`, `AI_MODEL`,
+`AI_MAX_TOKENS`) go in a local, git-ignored `.env.local` — create it with your
+own Runware key before using the assistant:
+
+```bash
+touch .env.local   # then add: RUNWARE_API_KEY=<tu key de Runware>
+```
+
+The assistant only operates on your own personal OS data (tasks, events,
+accounts, transactions, ingredients, recipes) — it has no access to anything
+else outside the app. Autonomy is configurable from the panel:
+
+- **Confirmar borrados** (default) — destructive actions (deletes, archives, account deletions) ask for confirmation.
+- **Confirmar cambios** — every mutating action asks for confirmation.
+- **Autónomo** — the assistant executes everything it is asked to.
+
+Conversations and an audit log of executed actions are stored in SQLite
+(`ai_chats`, `ai_messages`, `ai_settings`, `ai_actions`).
 
 ## Scripts
 
@@ -54,6 +78,7 @@ npm run dev          # http://localhost:3000
 - **/kitchen/ingredients** — ingredient list (also serves as shopping list: mark available/unavailable)
 - **/kitchen/recipes** — recipe list + creation + cookability status
 - **/kitchen/recipes/[id]** — recipe detail with ingredients (add, edit quantity, remove), instructions, cookability
+- **floating AI panel** — every page: chat with the assistant, confirm/cancel proposed actions, choose autonomy level
 - **/projects** — active and archived projects
 - **/projects/[id]** — one project with its tasks
 
@@ -85,6 +110,15 @@ src/
     db/repository.ts      validated reads/writes, cookability, shopping generation
     form-actions.ts       server actions bound to <form> submissions
     components/           ingredient, recipe, shopping, pantry forms/lists
+  modules/ai/
+    db/schema.ts          ai_chats, ai_messages, ai_settings, ai_actions (audit log)
+    db/repository.ts      validated reads/writes (pure, db-injected)
+    llm/client.ts         OpenAI-compatible client (Runware), injectable fetch
+    tools/registry.ts     38 tools over the modules' repositories
+    orchestration/loop.ts autonomy gate + confirmation flow, injectable LLM
+    prompt.ts             system prompt (Spanish-first)
+    form-actions.ts       server actions for the chat panel (send/confirm/settings)
+  components/ai/          floating chat panel (client component)
 drizzle/                  generated migrations
 odd/tasks/                feature specs and task log
 ```
@@ -104,6 +138,9 @@ npm test
   against `:memory:` SQLite with migrations applied.
 - `action-result.test.ts` and `form-actions.test.ts` — server-action error
   mapping and `FormData` parsing, with `next/cache` mocked.
+- `modules/ai/*.test.ts` — schema/repository tests against `:memory:`; LLM
+  client tests with a mocked HTTP layer; orchestration and server-action tests
+  with a stub LLM and executor. No network or real database involved.
 
 ## Roadmap
 
@@ -113,6 +150,8 @@ npm test
 | **M2** (done) | Internal calendar: events and a weekly view; dated tasks show up there |
 | **M3** (done) | Finances: accounts, transactions, categories, balance |
 | **M4** (done) | Kitchen: ingredients, recipes, shopping list, pantry, cookability |
+| **M5** (done) | AI assistant: floating chat panel, 38 LLM tools over the personal OS, configurable autonomy, persisted conversations and action audit log |
 
 Deliberate non-goals for M1: external calendar sync, authentication, cloud
-sync, multi-user access.
+sync, multi-user access. The AI assistant is an *internal tool*: it only reads
+and writes your own personal OS data, never the web or external accounts.
