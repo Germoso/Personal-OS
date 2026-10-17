@@ -1,4 +1,4 @@
-import { and, eq, isNull, sql, type SQL } from "drizzle-orm";
+import { and, eq, isNull, lte, ne, sql, type SQL } from "drizzle-orm";
 
 import type { Db } from "@/db/client";
 
@@ -341,5 +341,22 @@ export function listByProject(db: Db, projectId: number): Task[] {
     .from(tasks)
     .where(eq(tasks.projectId, projectId))
     .orderBy(...defaultOrder)
+    .all();
+}
+
+/**
+ * "Hoy" view: overdue plus due-today tasks that are still open. Tasks without a
+ * due date and finished tasks stay out of it.
+ */
+export function listHoy(db: Db, today: string): Task[] {
+  const dueToday = normalizeDueDate(today);
+  if (typeof dueToday !== "string") {
+    throw new ValidationError(`Invalid today date: ${JSON.stringify(today)}.`);
+  }
+  return db
+    .select()
+    .from(tasks)
+    .where(and(lte(tasks.dueDate, dueToday), ne(tasks.status, "done")))
+    .orderBy(tasks.dueDate, priorityRank, tasks.createdAt)
     .all();
 }
