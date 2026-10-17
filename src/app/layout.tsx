@@ -23,6 +23,7 @@ const NAV = [
   { href: "/hoy", label: "Hoy" },
   { href: "/calendar", label: "Calendario" },
   { href: "/projects", label: "Proyectos" },
+  { href: "/finance", label: "Finanzas" },
 ];
 
 export default function RootLayout({
