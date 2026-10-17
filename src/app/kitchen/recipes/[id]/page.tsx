@@ -43,10 +43,15 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
         )}
       </header>
 
+      <div className="rounded-lg border border-neutral-700 bg-neutral-900 p-4">
+        <h2 className="mb-2 text-sm font-semibold">Agregar ingrediente a esta receta</h2>
+        <RecipeIngredientForm recipeId={recipe.id} ingredients={ingredients} />
+      </div>
+
       <div>
-        <h2 className="mb-2 text-sm font-semibold">Ingredientes</h2>
+        <h2 className="mb-2 text-sm font-semibold">Ingredientes de la receta</h2>
         {ris.length === 0 ? (
-          <p className="text-sm text-neutral-500">Sin ingredientes.</p>
+          <p className="text-sm text-neutral-500">Sin ingredientes. Agregá uno arriba.</p>
         ) : (
           <ul className="flex flex-col gap-2">
             {ris.map((ri) => (
@@ -68,11 +73,6 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
             ))}
           </ul>
         )}
-      </div>
-
-      <div>
-        <h2 className="mb-2 text-sm font-semibold">Agregar ingrediente</h2>
-        <RecipeIngredientForm recipeId={recipe.id} ingredients={ingredients} />
       </div>
 
       {recipe.instructions ? (
