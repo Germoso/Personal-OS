@@ -33,6 +33,25 @@ Este repo se gestiona con Orca. Cada tarea vive en un worktree (`~/orca/workspac
 4. **Al terminar:** `orca worktree set --worktree current --workspace-status in-review --comment "<resumen + link de PR si existe>"`.
 5. **Después del merge** (lo decide el humano): `--workspace-status completed` y limpiar el worktree solo si el humano lo pide.
 
+### Diagrama de flujo
+
+```mermaid
+flowchart TD
+    A([Worktree creado]) --> B[todo<br/>agente idle esperando tarea]
+    B --> C[in-progress<br/>comment: qué voy a hacer]
+    C --> D[Commits locales en la rama<br/>tests verdes<br/>avances en comment]
+    D --> E{¿Tarea terminada?}
+    E -- no --> D
+    E -- sí --> F[in-review<br/>comment: resumen + PR si existe]
+    F --> G[El HUMANO pushea el PR<br/>⛔ agentes jamás hacen push]
+    G --> H{¿Revisión aprobada?}
+    H -- cambios pedidos --> D
+    H -- merge --> I[completed<br/>merge hecho]
+    I --> J{¿Limpiar worktree?<br/>lo decide el humano}
+    J -- sí --> K[worktree rm --force]
+    J -- no --> L[Se queda archivado]
+```
+
 ### Comandos operativos del agente
 - Ver contexto: `orca worktree current --json` · `orca terminal read`
 - Mover tarjeta: `orca worktree set --worktree current --workspace-status <id> --comment "..."`
