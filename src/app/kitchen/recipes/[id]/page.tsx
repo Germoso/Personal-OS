@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 import { connection } from "next/server";
 
 import { db } from "@/db";
-import { addRecipeToShoppingListFormAction } from "@/modules/kitchen/form-actions";
+import { removeRecipeIngredientFormAction } from "@/modules/kitchen/form-actions";
+import { RecipeIngredientEdit } from "@/modules/kitchen/components/recipe-ingredient-edit";
+import { RecipeIngredientForm } from "@/modules/kitchen/components/recipe-ingredient-form";
 import * as repo from "@/modules/kitchen/db/repository";
 
 export const instant = false;
@@ -23,6 +25,7 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
 
   const ris = repo.listRecipeIngredients(db, recipeId);
   const cookability = repo.listRecipesWithCookability(db).find((c) => c.recipe.id === recipeId);
+  const ingredients = repo.listIngredients(db);
 
   return (
     <section className="flex flex-col gap-6">
@@ -45,14 +48,31 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
         {ris.length === 0 ? (
           <p className="text-sm text-neutral-500">Sin ingredientes.</p>
         ) : (
-          <ul className="flex flex-col gap-1">
+          <ul className="flex flex-col gap-2">
             {ris.map((ri) => (
-              <li key={ri.id} className="text-sm">
-                {ri.quantity / 100} {ri.unit ?? ri.ingredientUnit} — {ri.ingredientName}
+              <li key={ri.id} className="flex items-center justify-between rounded-lg border border-neutral-800 bg-neutral-900 p-3">
+                <span className="text-sm">{ri.quantity / 100} {ri.unit ?? ri.ingredientUnit} — {ri.ingredientName}</span>
+                <div className="flex gap-2">
+                  <details className="text-xs">
+                    <summary className="cursor-pointer text-neutral-400 hover:text-neutral-200">Editar</summary>
+                    <div className="mt-2">
+                      <RecipeIngredientEdit id={ri.id} quantity={ri.quantity / 100} unit={ri.unit} />
+                    </div>
+                  </details>
+                  <form action={removeRecipeIngredientFormAction}>
+                    <input type="hidden" name="id" value={ri.id} />
+                    <button type="submit" className="rounded border border-neutral-700 px-2 py-1 text-xs text-neutral-500 hover:text-red-400">Borrar</button>
+                  </form>
+                </div>
               </li>
             ))}
           </ul>
         )}
+      </div>
+
+      <div>
+        <h2 className="mb-2 text-sm font-semibold">Agregar ingrediente</h2>
+        <RecipeIngredientForm recipeId={recipe.id} ingredients={ingredients} />
       </div>
 
       {recipe.instructions ? (
@@ -61,13 +81,6 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
           <p className="whitespace-pre-wrap text-sm text-neutral-300">{recipe.instructions}</p>
         </div>
       ) : null}
-
-      <form action={addRecipeToShoppingListFormAction}>
-        <input type="hidden" name="recipeId" value={recipe.id} />
-        <button type="submit" className="rounded bg-neutral-100 px-3 py-1.5 text-sm font-medium text-neutral-900">
-          Agregar ingredientes a lista de compras
-        </button>
-      </form>
     </section>
   );
 }

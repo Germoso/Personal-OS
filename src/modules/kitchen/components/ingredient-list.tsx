@@ -1,4 +1,4 @@
-import { deleteIngredientFormAction } from "../form-actions";
+import { toggleAvailableFormAction, deleteIngredientFormAction } from "../form-actions";
 import type { Ingredient } from "../db/repository";
 
 export function IngredientList({ ingredients }: { ingredients: Ingredient[] }) {
@@ -9,9 +9,21 @@ export function IngredientList({ ingredients }: { ingredients: Ingredient[] }) {
     <ul className="flex flex-col gap-2">
       {ingredients.map((ing) => (
         <li key={ing.id} className="flex items-center justify-between rounded-lg border border-neutral-800 bg-neutral-900 p-4">
-          <div>
-            <p className="text-sm font-medium">{ing.name}</p>
-            <p className="text-xs text-neutral-500">{ing.unit}{ing.category ? ` · ${ing.category}` : ""}</p>
+          <div className="flex items-center gap-3">
+            <form action={toggleAvailableFormAction}>
+              <input type="hidden" name="id" value={ing.id} />
+              <button
+                type="submit"
+                className={`h-5 w-5 rounded border ${ing.available ? "bg-emerald-600 border-emerald-600" : "border-neutral-600"}`}
+                aria-label="toggle available"
+              >
+                {ing.available ? "✓" : ""}
+              </button>
+            </form>
+            <div>
+              <p className={`text-sm font-medium ${ing.available ? "" : "text-neutral-500"}`}>{ing.name}</p>
+              <p className="text-xs text-neutral-500">{ing.unit}{ing.category ? ` · ${ing.category}` : ""}</p>
+            </div>
           </div>
           <form action={deleteIngredientFormAction} className="contents">
             <input type="hidden" name="id" value={ing.id} />

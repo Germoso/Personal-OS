@@ -42,6 +42,22 @@ export async function createIngredientFormAction(_prev: FormState, formData: For
   );
 }
 
+export async function updateIngredientFormAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  return submit(() =>
+    repo.updateIngredient(db, {
+      id: formNumber(formData, "id") ?? Number.NaN,
+      name: formString(formData, "name"),
+      unit: formString(formData, "unit"),
+      category: formString(formData, "category"),
+      available: formData.has("available") ? formString(formData, "available") === "true" : undefined,
+    }),
+  );
+}
+
+export async function toggleAvailableFormAction(formData: FormData): Promise<void> {
+  await submit(() => repo.toggleAvailable(db, formNumber(formData, "id") ?? Number.NaN));
+}
+
 export async function deleteIngredientFormAction(formData: FormData): Promise<void> {
   await submit(() => repo.deleteIngredient(db, formNumber(formData, "id") ?? Number.NaN));
 }
@@ -74,54 +90,17 @@ export async function addRecipeIngredientFormAction(_prev: FormState, formData: 
   );
 }
 
+export async function updateRecipeIngredientFormAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  return submit(() =>
+    repo.updateRecipeIngredient(db, {
+      id: formNumber(formData, "id") ?? Number.NaN,
+      ingredientId: formNumber(formData, "ingredientId"),
+      quantity: formNumber(formData, "quantity"),
+      unit: formData.has("unit") ? formString(formData, "unit") || null : undefined,
+    }),
+  );
+}
+
 export async function removeRecipeIngredientFormAction(formData: FormData): Promise<void> {
   await submit(() => repo.removeRecipeIngredient(db, formNumber(formData, "id") ?? Number.NaN));
-}
-
-export async function addRecipeToShoppingListFormAction(formData: FormData): Promise<void> {
-  await submit(() => repo.addRecipeToShoppingList(db, formNumber(formData, "recipeId") ?? Number.NaN));
-}
-
-/* ------------------------------- shopping ----------------------------------- */
-
-export async function addShoppingItemFormAction(_prev: FormState, formData: FormData): Promise<FormState> {
-  return submit(() =>
-    repo.addShoppingItem(db, {
-      ingredientId: formData.has("ingredientId") && formString(formData, "ingredientId") !== ""
-        ? Number(formString(formData, "ingredientId"))
-        : null,
-      freeText: formString(formData, "freeText"),
-      quantity: formNumber(formData, "quantity"),
-      unit: formString(formData, "unit"),
-      source: "manual",
-    }),
-  );
-}
-
-export async function toggleShoppingItemFormAction(formData: FormData): Promise<void> {
-  await submit(() => repo.toggleShoppingItem(db, formNumber(formData, "id") ?? Number.NaN));
-}
-
-export async function deleteShoppingItemFormAction(formData: FormData): Promise<void> {
-  await submit(() => repo.deleteShoppingItem(db, formNumber(formData, "id") ?? Number.NaN));
-}
-
-export async function clearCheckedShoppingItemsFormAction(formData: FormData): Promise<void> {
-  await submit(() => repo.clearCheckedShoppingItems(db));
-}
-
-/* -------------------------------- pantry ----------------------------------- */
-
-export async function upsertPantryItemFormAction(_prev: FormState, formData: FormData): Promise<FormState> {
-  return submit(() =>
-    repo.upsertPantryItem(db, {
-      ingredientId: formNumber(formData, "ingredientId") ?? Number.NaN,
-      quantity: formNumber(formData, "quantity") ?? Number.NaN,
-      unit: formString(formData, "unit"),
-    }),
-  );
-}
-
-export async function deletePantryItemFormAction(formData: FormData): Promise<void> {
-  await submit(() => repo.deletePantryItem(db, formNumber(formData, "id") ?? Number.NaN));
 }

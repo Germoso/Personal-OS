@@ -13,20 +13,35 @@ beforeEach(() => {
 });
 
 describe("ingredients (S21)", () => {
-  it("creates and lists ingredients", () => {
+  it("creates and lists ingredients with available=false by default", () => {
     const ing = repo.createIngredient(db, { name: "Harina", unit: "g", category: "secos" });
-    expect(ing).toMatchObject({ name: "Harina", unit: "g", category: "secos" });
+    expect(ing).toMatchObject({ name: "Harina", unit: "g", category: "secos", available: false });
     expect(repo.listIngredients(db)).toHaveLength(1);
+  });
+
+  it("creates an ingredient as available", () => {
+    const ing = repo.createIngredient(db, { name: "Huevos", available: true });
+    expect(ing.available).toBe(true);
   });
 
   it("rejects blank name", () => {
     expect(() => repo.createIngredient(db, { name: "   " })).toThrow(/name/i);
   });
 
+  it("toggles available", () => {
+    const ing = repo.createIngredient(db, { name: "Harina" });
+    expect(ing.available).toBe(false);
+    const toggled = repo.toggleAvailable(db, ing.id);
+    expect(toggled.available).toBe(true);
+    const toggledBack = repo.toggleAvailable(db, ing.id);
+    expect(toggledBack.available).toBe(false);
+  });
+
   it("updates and deletes", () => {
     const ing = repo.createIngredient(db, { name: "Harina" });
-    repo.updateIngredient(db, { id: ing.id, unit: "kg" });
+    repo.updateIngredient(db, { id: ing.id, unit: "kg", available: true });
     expect(repo.getIngredient(db, ing.id).unit).toBe("kg");
+    expect(repo.getIngredient(db, ing.id).available).toBe(true);
     repo.deleteIngredient(db, ing.id);
     expect(repo.listIngredients(db)).toEqual([]);
   });
@@ -46,97 +61,43 @@ describe("recipes (S22)", () => {
     const ing = repo.createIngredient(db, { name: "Harina" });
     const recipe = repo.createRecipe(db, { title: "Panqueques" });
     const ri = repo.addRecipeIngredient(db, { recipeId: recipe.id, ingredientId: ing.id, quantity: 2, unit: "tazas" });
-    expect(ri.quantity).toBe(200); // scaled ×100
+    expect(ri.quantity).toBe(200);
     expect(repo.listRecipeIngredients(db, recipe.id)).toHaveLength(1);
     repo.removeRecipeIngredient(db, ri.id);
     expect(repo.listRecipeIngredients(db, recipe.id)).toHaveLength(0);
   });
-});
 
-describe("shopping list (S24)", () => {
-  it("adds and toggles items", () => {
-    const item = repo.addShoppingItem(db, { freeText: "Leche", quantity: 2, unit: "l" });
-    expect(item).toMatchObject({ freeText: "Leche", checked: false });
-    const toggled = repo.toggleShoppingItem(db, item.id);
-    expect(toggled.checked).toBe(true);
-  });
-
-  it("generates shopping list from recipe", () => {
+  it("updates recipe ingredient quantity and unit", () => {
     const ing = repo.createIngredient(db, { name: "Harina" });
     const recipe = repo.createRecipe(db, { title: "Panqueques" });
-    repo.addRecipeIngredient(db, { recipeId: recipe.id, ingredientId: ing.id, quantity: 1 });
-    const items = repo.addRecipeToShoppingList(db, recipe.id);
-    expect(items).toHaveLength(1);
-    expect(repo.listShoppingItems(db)).toHaveLength(1);
-  });
-
-  it("sums quantities for duplicate unchecked items", () => {
-    const ing = repo.createIngredient(db, { name: "Harina" });
-    const recipe = repo.createRecipe(db, { title: "Panqueques" });
-    repo.addRecipeIngredient(db, { recipeId: recipe.id, ingredientId: ing.id, quantity: 1 });
-    repo.addRecipeToShoppingList(db, recipe.id);
-    repo.addRecipeToShoppingList(db, recipe.id);
-    const items = repo.listShoppingItems(db);
-    expect(items).toHaveLength(1);
-    expect(items[0].quantity).toBe(200); // 1 + 1 = 2 (scaled ×100)
-  });
-
-  it("clears checked items", () => {
-    const item = repo.addShoppingItem(db, { freeText: "Leche" });
-    repo.toggleShoppingItem(db, item.id);
-    repo.clearCheckedShoppingItems(db);
-    expect(repo.listShoppingItems(db)).toEqual([]);
-  });
-
-  it("syncs pantry when marking as bought", () => {
-    const ing = repo.createIngredient(db, { name: "Harina" });
-    const item = repo.addShoppingItem(db, { ingredientId: ing.id, quantity: 2, unit: "kg" });
-    expect(repo.listPantryItems(db)).toHaveLength(0);
-    repo.toggleShoppingItem(db, item.id);
-    expect(repo.listPantryItems(db)).toHaveLength(1);
-    expect(repo.listPantryItems(db)[0].quantity).toBe(200);
-  });
-
-  it("removes from pantry when un-marking as bought", () => {
-    const ing = repo.createIngredient(db, { name: "Harina" });
-    const item = repo.addShoppingItem(db, { ingredientId: ing.id, quantity: 2, unit: "kg" });
-    repo.toggleShoppingItem(db, item.id); // buy
-    repo.toggleShoppingItem(db, item.id); // un-buy
-    expect(repo.listPantryItems(db)).toHaveLength(0);
-  });
-});
-
-describe("pantry (S25)", () => {
-  it("upserts pantry items", () => {
-    const ing = repo.createIngredient(db, { name: "Harina" });
-    const item = repo.upsertPantryItem(db, { ingredientId: ing.id, quantity: 2, unit: "kg" });
-    expect(item.quantity).toBe(200);
-    const updated = repo.upsertPantryItem(db, { ingredientId: ing.id, quantity: 3 });
+    const ri = repo.addRecipeIngredient(db, { recipeId: recipe.id, ingredientId: ing.id, quantity: 1 });
+    const updated = repo.updateRecipeIngredient(db, { id: ri.id, quantity: 3, unit: "kg" });
     expect(updated.quantity).toBe(300);
-    expect(repo.listPantryItems(db)).toHaveLength(1);
+    expect(updated.unit).toBe("kg");
   });
 
-  it("deletes pantry items", () => {
-    const ing = repo.createIngredient(db, { name: "Harina" });
-    const item = repo.upsertPantryItem(db, { ingredientId: ing.id, quantity: 1 });
-    repo.deletePantryItem(db, item.id);
-    expect(repo.listPantryItems(db)).toEqual([]);
+  it("updates recipe ingredient ingredient", () => {
+    const ing1 = repo.createIngredient(db, { name: "Harina" });
+    const ing2 = repo.createIngredient(db, { name: "Avena" });
+    const recipe = repo.createRecipe(db, { title: "Panqueques" });
+    const ri = repo.addRecipeIngredient(db, { recipeId: recipe.id, ingredientId: ing1.id, quantity: 1 });
+    const updated = repo.updateRecipeIngredient(db, { id: ri.id, ingredientId: ing2.id });
+    expect(updated.ingredientId).toBe(ing2.id);
   });
 });
 
 describe("cookability (S26)", () => {
   it("marks recipe as cookable when all ingredients available", () => {
-    const ing = repo.createIngredient(db, { name: "Harina" });
+    const ing = repo.createIngredient(db, { name: "Harina", available: true });
     const recipe = repo.createRecipe(db, { title: "Panqueques" });
     repo.addRecipeIngredient(db, { recipeId: recipe.id, ingredientId: ing.id, quantity: 1 });
-    repo.upsertPantryItem(db, { ingredientId: ing.id, quantity: 2 });
     const result = repo.listRecipesWithCookability(db);
     expect(result[0].cookable).toBe(true);
     expect(result[0].missing).toEqual([]);
   });
 
-  it("marks recipe as not cookable when ingredient missing", () => {
-    const ing = repo.createIngredient(db, { name: "Harina" });
+  it("marks recipe as not cookable when ingredient not available", () => {
+    const ing = repo.createIngredient(db, { name: "Harina", available: false });
     const recipe = repo.createRecipe(db, { title: "Panqueques" });
     repo.addRecipeIngredient(db, { recipeId: recipe.id, ingredientId: ing.id, quantity: 1 });
     const result = repo.listRecipesWithCookability(db);
@@ -144,13 +105,9 @@ describe("cookability (S26)", () => {
     expect(result[0].missing).toEqual(["Harina"]);
   });
 
-  it("marks recipe as not cookable when insufficient quantity", () => {
-    const ing = repo.createIngredient(db, { name: "Harina" });
-    const recipe = repo.createRecipe(db, { title: "Panqueques" });
-    repo.addRecipeIngredient(db, { recipeId: recipe.id, ingredientId: ing.id, quantity: 2 });
-    repo.upsertPantryItem(db, { ingredientId: ing.id, quantity: 1 });
+  it("marks recipe as cookable when no ingredients", () => {
+    const recipe = repo.createRecipe(db, { title: "Agua" });
     const result = repo.listRecipesWithCookability(db);
-    expect(result[0].cookable).toBe(false);
-    expect(result[0].missing).toEqual(["Harina"]);
+    expect(result[0].cookable).toBe(true);
   });
 });

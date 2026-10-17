@@ -19,7 +19,7 @@ import {
   createIngredientFormAction,
   createRecipeFormAction,
   deleteIngredientFormAction,
-  toggleShoppingItemFormAction,
+  toggleAvailableFormAction,
 } from "./form-actions";
 
 function fd(entries: Record<string, string>): FormData {
@@ -30,8 +30,6 @@ function fd(entries: Record<string, string>): FormData {
 
 beforeEach(() => {
   revalidatePath.mockClear();
-  for (const item of repo.listShoppingItems(db)) repo.deleteShoppingItem(db, item.id);
-  for (const item of repo.listPantryItems(db)) repo.deletePantryItem(db, item.id);
   for (const recipe of repo.listRecipes(db)) repo.deleteRecipe(db, recipe.id);
   for (const ing of repo.listIngredients(db)) repo.deleteIngredient(db, ing.id);
 });
@@ -51,6 +49,15 @@ describe("createIngredientFormAction", () => {
   });
 });
 
+describe("toggleAvailableFormAction", () => {
+  it("toggles and revalidates", async () => {
+    const ing = repo.createIngredient(db, { name: "Harina" });
+    await toggleAvailableFormAction(fd({ id: String(ing.id) }));
+    expect(repo.listIngredients(db)[0].available).toBe(true);
+    expect(revalidatePath).toHaveBeenCalledWith("/", "layout");
+  });
+});
+
 describe("createRecipeFormAction", () => {
   it("creates a recipe and revalidates", async () => {
     const state = await createRecipeFormAction({ ok: false }, fd({ title: "Panqueques", servings: "4" }));
@@ -64,15 +71,6 @@ describe("deleteIngredientFormAction", () => {
     const ing = repo.createIngredient(db, { name: "Harina" });
     await deleteIngredientFormAction(fd({ id: String(ing.id) }));
     expect(repo.listIngredients(db)).toEqual([]);
-    expect(revalidatePath).toHaveBeenCalledWith("/", "layout");
-  });
-});
-
-describe("toggleShoppingItemFormAction", () => {
-  it("toggles and revalidates", async () => {
-    const item = repo.addShoppingItem(db, { freeText: "Leche" });
-    await toggleShoppingItemFormAction(fd({ id: String(item.id) }));
-    expect(repo.listShoppingItems(db)[0].checked).toBe(true);
     expect(revalidatePath).toHaveBeenCalledWith("/", "layout");
   });
 });

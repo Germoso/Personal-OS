@@ -11,21 +11,21 @@ Branch: `feat/m4-kitchen` (stacked on `feat/m3-finance`, M3 is not merged yet).
 
 S20 — Scope (approved): "un modulo para la cocina, integrar una lista de compras con una lista de recetas en base a esos ingredientes". User confirmation: "Si, tambien quiero ver las recetas disponibles segun los ingredientes que hay".
 
-S21 — Ingredient entity: name (required, unique), unit (default "un"), category (optional, free text). Ingredients are the shared vocabulary between recipes, shopping list and pantry.
+S21 — Ingredient entity: name (required, unique), unit (default "un"), category (optional, free text), available (boolean, default false). The ingredient list doubles as the shopping list: marking an ingredient as available means "I have it at home".
 
 S22 — Recipe entity: title (required), description (optional), servings (positive integer, default 1), instructions (optional free text). A recipe has 0..N recipe ingredients.
 
 S23 — RecipeIngredient entity: recipeId (FK, cascade delete), ingredientId (FK, restrict delete if used), quantity (positive number, stored as integer scaled ×100 to allow decimals like 0.5), unit (override of ingredient unit, optional).
 
-S24 — ShoppingItem entity: ingredientId (FK, nullable for free-text items), freeText (optional, used when ingredientId is null), quantity (integer scaled ×100), unit, checked (boolean, default false), source (manual or recipe). Items can be toggled checked/unchecked.
+S24 — (REMOVED) ShoppingItem entity: no longer exists. The ingredient list IS the shopping list.
 
-S25 — PantryItem entity: ingredientId (FK, unique), quantity (integer scaled ×100), unit. Represents what the user has at home. Upsert by ingredient.
+S25 — (REMOVED) PantryItem entity: no longer exists. Availability is tracked on the ingredient itself.
 
-S26 — "Available recipes" (from S20): a recipe is cookable when every one of its recipe ingredients has a matching pantry item with sufficient quantity. The UI shows cookable recipes first, then recipes missing 1..N ingredients with the list of missing ingredient names.
+S26 — "Available recipes" (from S20): a recipe is cookable when every one of its recipe ingredients has its ingredient marked as available (available=true). The UI shows cookable recipes and lists missing ingredient names.
 
-S27 — "Generate shopping list from recipe": a button on a recipe adds its ingredients to the shopping list, summing quantities when the same ingredient already exists as an unchecked item.
+S27 — (REMOVED) "Generate shopping list from recipe": no longer needed. Ingredients are marked available/unavailable directly.
 
-S28 — Views: `/kitchen` summary (shopping pending count, cookable recipes). `/kitchen/ingredients` CRUD. `/kitchen/recipes` list + create. `/kitchen/recipes/[id]` detail with ingredients, instructions, "add to shopping list" button, cookability badge. `/kitchen/shopping` checklist with toggle. Pantry is internal only (synced automatically from shopping list).
+S28 — Views: `/kitchen` summary (ingredient/recipe counts, cookable recipes). `/kitchen/ingredients` CRUD with availability toggle. `/kitchen/recipes` list + create + cookability. `/kitchen/recipes/[id]` detail with ingredients (add, edit, remove), instructions, cookability badge. No separate shopping or pantry views.
 
 S29 — Verification: tests for all schemas, repositories (validation, CRUD, queries, cookability, shopping generation), server actions, FormData form actions, and HTTP smoke.
 

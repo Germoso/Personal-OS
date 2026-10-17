@@ -50,11 +50,10 @@ npm run dev          # http://localhost:3000
 - **/finance/accounts** — CRUD for accounts
 - **/finance/categories** — CRUD for categories
 - **/finance/transactions** — transaction list with filters + creation form
-- **/kitchen** — kitchen summary: ingredient/recipe counts, cookable recipes, pending shopping
-- **/kitchen/ingredients** — CRUD for ingredients
+- **/kitchen** — kitchen summary: ingredient/recipe counts, cookable recipes
+- **/kitchen/ingredients** — ingredient list (also serves as shopping list: mark available/unavailable)
 - **/kitchen/recipes** — recipe list + creation + cookability status
-- **/kitchen/recipes/[id]** — recipe detail with ingredients, instructions, add-to-shopping-list
-- **/kitchen/shopping** — shopping checklist with toggle (buying an item adds it to the pantry automatically)
+- **/kitchen/recipes/[id]** — recipe detail with ingredients, edit quantity, instructions, cookability
 - **/projects** — active and archived projects
 - **/projects/[id]** — one project with its tasks
 

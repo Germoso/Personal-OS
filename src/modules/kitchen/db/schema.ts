@@ -1,14 +1,13 @@
-import { index, integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 import { timestamps } from "@/db/columns";
-
-export const SHOPPING_SOURCES = ["manual", "recipe"] as const;
 
 export const ingredients = sqliteTable("ingredients", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull().unique(),
   unit: text("unit").notNull().default("un"),
   category: text("category"),
+  available: integer("available", { mode: "boolean" }).notNull().default(false),
   ...timestamps,
 });
 
@@ -39,31 +38,3 @@ export const recipeIngredients = sqliteTable(
     index("recipe_ingredients_ingredient_id_idx").on(table.ingredientId),
   ],
 );
-
-export const shoppingItems = sqliteTable(
-  "shopping_items",
-  {
-    id: integer("id").primaryKey({ autoIncrement: true }),
-    ingredientId: integer("ingredient_id").references(() => ingredients.id, {
-      onDelete: "set null",
-    }),
-    freeText: text("free_text"),
-    quantity: integer("quantity").notNull().default(100), // scaled ×100, default 1
-    unit: text("unit").notNull().default("un"),
-    checked: integer("checked", { mode: "boolean" }).notNull().default(false),
-    source: text("source", { enum: SHOPPING_SOURCES }).notNull().default("manual"),
-    ...timestamps,
-  },
-  (table) => [index("shopping_items_checked_idx").on(table.checked)],
-);
-
-export const pantryItems = sqliteTable("pantry_items", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  ingredientId: integer("ingredient_id")
-    .notNull()
-    .unique()
-    .references(() => ingredients.id, { onDelete: "cascade" }),
-  quantity: integer("quantity").notNull().default(0), // scaled ×100
-  unit: text("unit").notNull().default("un"),
-  ...timestamps,
-});
