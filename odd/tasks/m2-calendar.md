@@ -19,14 +19,14 @@ Non-goals (not requested): external calendar sync (Google/CalDAV), recurring eve
 
 ## Tasks
 
-- C1 (S6, S9) — Feature document, branch and tracking. Route: inline. Commit:
-- C2 (S7) — Events schema + migration + model tests. Route: inline. Commit:
-- C3 (S8) — Week range date helpers + tests. Route: inline. Commit:
-- C4 (S7) — Event repository (validation, CRUD, range listing) + tests. Route: inline. Commit:
-- C5 (S8) — Tasks-by-due-range query + tests. Route: inline. Commit:
-- C6 (S7, S9) — Event server actions + FormData form actions + tests. Route: inline. Commit:
-- C7 (S8) — `/calendar` weekly view with navigation and event form. Route: inline. Commit:
-- C8 (S9) — README update + final verification. Route: inline. Commit:
+- C1 (S6, S9) — Feature document, branch and tracking. Route: inline. Commit: (this document)
+- C2 (S7) — Events schema + migration + model tests. Route: inline. Commit: b146bf9
+- C3 (S8) — Week range date helpers + tests. Route: inline. Commit: 990e201
+- C4 (S7) — Event repository (validation, CRUD, range listing) + tests. Route: inline. Commit: 4e3ac7a
+- C5 (S8) — Tasks-by-due-range query + tests. Route: inline. Commit: a49450f
+- C6 (S7, S9) — Event server actions + FormData form actions + tests. Route: inline. Commit: ee16ac0
+- C7 (S8) — `/calendar` weekly view with navigation and event form. Route: inline. Commit: 8ce8e64
+- C8 (S9) — README update + final verification. Route: inline. Commit: 8ce8e64
 
 ## Log
 
