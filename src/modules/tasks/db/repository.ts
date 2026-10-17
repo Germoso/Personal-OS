@@ -1,6 +1,8 @@
-import { and, eq, isNull, lte, ne, sql, type SQL } from "drizzle-orm";
+import { and, eq, gte, isNull, lte, ne, sql, type SQL } from "drizzle-orm";
 
 import type { Db } from "@/db/client";
+
+import { isValidIsoDate } from "@/lib/date";
 
 import {
   PROJECT_STATUSES,
@@ -56,13 +58,10 @@ function optionalText(value: unknown, field: string): string | undefined {
 function normalizeDueDate(value: unknown): string | null | undefined {
   if (value === undefined) return undefined;
   if (value === null || value === "") return null;
-  if (typeof value !== "string" || !ISO_DATE.test(value)) {
+  if (typeof value !== "string" || !ISO_DATE.test(value) || !isValidIsoDate(value)) {
     throw new ValidationError(
       `Invalid due date: ${JSON.stringify(value)}. Expected YYYY-MM-DD.`,
     );
-  }
-  if (Number.isNaN(Date.parse(`${value}T00:00:00Z`))) {
-    throw new ValidationError(`Invalid due date: ${value}.`);
   }
   return value;
 }
@@ -357,6 +356,43 @@ export function listHoy(db: Db, today: string): Task[] {
     .select()
     .from(tasks)
     .where(and(lte(tasks.dueDate, dueToday), ne(tasks.status, "done")))
+    .orderBy(tasks.dueDate, priorityRank, tasks.createdAt)
+    .all();
+}
+
+/* ---------------------------------- calendar -------------------------------- */
+
+/**
+ * Open tasks whose due date falls in [startDate, endDate], inclusive. Used by
+ * the weekly calendar view. Rejects an inverted range.
+ */
+export function listTasksByDueDateRange(
+  db: Db,
+  startDate: string,
+  endDate: string,
+): Task[] {
+  const start = normalizeDueDate(startDate);
+  const end = normalizeDueDate(endDate);
+  if (typeof start !== "string" || typeof end !== "string") {
+    throw new ValidationError(
+      `Invalid range: ${JSON.stringify(startDate)} to ${JSON.stringify(endDate)}.`,
+    );
+  }
+  if (end < start) {
+    throw new ValidationError(
+      `Invalid range: start ${start} is after end ${end}.`,
+    );
+  }
+  return db
+    .select()
+    .from(tasks)
+    .where(
+      and(
+        gte(tasks.dueDate, start),
+        lte(tasks.dueDate, end),
+        ne(tasks.status, "done"),
+      ),
+    )
     .orderBy(tasks.dueDate, priorityRank, tasks.createdAt)
     .all();
 }
