@@ -4,7 +4,7 @@ A local-first web app to run your personal life: projects, tasks and — in late
 milestones — a calendar and finances. All data lives in a single SQLite file on
 your machine. No accounts, no cloud.
 
-**Status:** milestone 3 (M3) — finances (accounts, categories, transactions, balance) on top of M1+M2.
+**Status:** milestone 4 (M4) — kitchen (ingredients, recipes, shopping list, pantry, cookability) on top of M1+M2+M3.
 
 ## Stack
 
@@ -50,6 +50,12 @@ npm run dev          # http://localhost:3000
 - **/finance/accounts** — CRUD for accounts
 - **/finance/categories** — CRUD for categories
 - **/finance/transactions** — transaction list with filters + creation form
+- **/kitchen** — kitchen summary: ingredient/recipe counts, cookable recipes, pending shopping
+- **/kitchen/ingredients** — CRUD for ingredients
+- **/kitchen/recipes** — recipe list + creation + cookability status
+- **/kitchen/recipes/[id]** — recipe detail with ingredients, instructions, add-to-shopping-list
+- **/kitchen/shopping** — shopping checklist with toggle
+- **/kitchen/pantry** — pantry management (ingredients available at home)
 - **/projects** — active and archived projects
 - **/projects/[id]** — one project with its tasks
 
@@ -76,6 +82,11 @@ src/
     db/repository.ts      validated reads/writes, balance calculation
     form-actions.ts       server actions bound to <form> submissions
     components/           account, category, transaction forms/lists
+  modules/kitchen/
+    db/schema.ts          ingredients, recipes, recipe_ingredients, shopping_items, pantry_items
+    db/repository.ts      validated reads/writes, cookability, shopping generation
+    form-actions.ts       server actions bound to <form> submissions
+    components/           ingredient, recipe, shopping, pantry forms/lists
 drizzle/                  generated migrations
 odd/tasks/                feature specs and task log
 ```
@@ -103,6 +114,7 @@ npm test
 | **M1** (done) | Projects and tasks |
 | **M2** (done) | Internal calendar: events and a weekly view; dated tasks show up there |
 | **M3** (done) | Finances: accounts, transactions, categories, balance |
+| **M4** (done) | Kitchen: ingredients, recipes, shopping list, pantry, cookability |
 
 Deliberate non-goals for M1: external calendar sync, authentication, cloud
 sync, multi-user access.
