@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import { beforeEach, describe, expect, it } from "vitest";
 
@@ -44,7 +45,7 @@ describe("ai_messages table (S34)", () => {
   it("cascades delete when chat is removed", () => {
     const chat = db.insert(aiChats).values({} as never).returning().get();
     db.insert(aiMessages).values({ chatId: chat.id, role: "user", content: "hola" }).run();
-    db.delete(aiChats).where(require("drizzle-orm").eq(aiChats.id, chat.id)).run();
+    db.delete(aiChats).where(eq(aiChats.id, chat.id)).run();
     expect(db.select().from(aiMessages).all()).toEqual([]);
   });
 });
@@ -95,7 +96,7 @@ describe("ai_actions table (S34)", () => {
   it("cascades delete when chat is removed", () => {
     const chat = db.insert(aiChats).values({} as never).returning().get();
     db.insert(aiActions).values({ chatId: chat.id, tool: "x", args: "{}", status: "executed" }).run();
-    db.delete(aiChats).where(require("drizzle-orm").eq(aiChats.id, chat.id)).run();
+    db.delete(aiChats).where(eq(aiChats.id, chat.id)).run();
     expect(db.select().from(aiActions).all()).toEqual([]);
   });
 });
