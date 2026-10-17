@@ -1,36 +1,93 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Personal OS
 
-## Getting Started
+A local-first web app to run your personal life: projects, tasks and — in later
+milestones — a calendar and finances. All data lives in a single SQLite file on
+your machine. No accounts, no cloud.
 
-First, run the development server:
+**Status:** milestone 1 (M1) — projects and tasks.
+
+## Stack
+
+- [Next.js](https://nextjs.org) 16 (App Router, server components, server actions)
+- TypeScript, Tailwind CSS 4
+- [Drizzle ORM](https://orm.drizzle.team) over SQLite (`better-sqlite3`)
+
+## Requirements
+
+- Node.js 24+ and npm
+- No database server: SQLite is embedded
+
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run db:migrate   # creates data/personal-os.db and applies migrations
+npm run dev          # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`DATABASE_PATH` overrides the database location (default
+`data/personal-os.db`, git-ignored).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Script | Purpose |
+| --- | --- |
+| `npm run dev` | Development server |
+| `npm run build` | Production build |
+| `npm run start` | Serve the production build |
+| `npm test` | Run the test suite once |
+| `npm run test:watch` | Tests in watch mode |
+| `npm run lint` | ESLint |
+| `npm run db:generate` | Generate a migration after editing a schema |
+| `npm run db:migrate` | Apply pending migrations |
 
-## Learn More
+## Views (M1)
 
-To learn more about Next.js, take a look at the following resources:
+- **/inbox** — tasks without a project
+- **/hoy** — overdue tasks plus tasks due today (open tasks only)
+- **/projects** — active and archived projects
+- **/projects/[id]** — one project with its tasks
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/
+  app/                    routes (inbox, hoy, projects, projects/[id])
+  db/                     sqlite client factory + app singleton
+  lib/date.ts             local-day helpers
+  modules/tasks/
+    db/schema.ts          projects & tasks tables
+    db/repository.ts      validated reads/writes (pure, db-injected)
+    actions.ts            server actions (typed input)
+    form-actions.ts       server actions bound to <form> submissions
+    components/           task form/list, project form/list
+drizzle/                  generated migrations
+odd/tasks/                feature specs and task log
+```
 
-## Deploy on Vercel
+The repository is the only place that talks to SQLite. It receives the
+connection as an argument, so tests run against an in-memory database with the
+real migrations applied. Server actions are thin: they validate through the
+repository and map domain errors to a serializable `ActionResult`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Testing
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm test
+```
+
+- `db/*.test.ts` — schema defaults, constraints and every repository operation,
+  against `:memory:` SQLite with migrations applied.
+- `action-result.test.ts` and `form-actions.test.ts` — server-action error
+  mapping and `FormData` parsing, with `next/cache` mocked.
+
+## Roadmap
+
+| Milestone | Scope |
+| --- | --- |
+| **M1** (done) | Projects and tasks |
+| **M2** | Internal calendar: events and a weekly view; dated tasks show up there |
+| **M3** | Finances: accounts, transactions, categories, balance |
+
+Deliberate non-goals for M1: external calendar sync, authentication, cloud
+sync, multi-user access.
