@@ -75,6 +75,40 @@ export async function createRecipeFormAction(_prev: FormState, formData: FormDat
   );
 }
 
+export async function createRecipeWithIngredientsFormAction(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  return submit(() => {
+    const recipe = repo.createRecipe(db, {
+      title: formString(formData, "title") ?? "",
+      description: formString(formData, "description"),
+      servings: formNumber(formData, "servings"),
+      instructions: formString(formData, "instructions"),
+    });
+
+    // Parse ingredient rows: ingredientId[], quantity[], unit[]
+    const ingredientIds = formData.getAll("ingredientId") as string[];
+    const quantities = formData.getAll("quantity") as string[];
+    const units = formData.getAll("unit") as string[];
+
+    for (let i = 0; i < ingredientIds.length; i++) {
+      const id = Number(ingredientIds[i]);
+      const qty = Number(quantities[i]);
+      if (!Number.isNaN(id) && id > 0 && !Number.isNaN(qty) && qty > 0) {
+        repo.addRecipeIngredient(db, {
+          recipeId: recipe.id,
+          ingredientId: id,
+          quantity: qty,
+          unit: units[i] || null,
+        });
+      }
+    }
+
+    return recipe;
+  });
+}
+
 export async function deleteRecipeFormAction(formData: FormData): Promise<void> {
   await submit(() => repo.deleteRecipe(db, formNumber(formData, "id") ?? Number.NaN));
 }

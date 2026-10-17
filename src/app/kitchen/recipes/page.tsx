@@ -12,11 +12,12 @@ export default async function KitchenRecipesPage() {
   const recipes = repo.listRecipes(db);
   const cookability = repo.listRecipesWithCookability(db);
   const cookableIds = new Set(cookability.filter((c) => c.cookable).map((c) => c.recipe.id));
+  const ingredients = repo.listIngredients(db);
 
   return (
     <section className="flex flex-col gap-6">
       <header><h1 className="text-xl font-semibold">Recetas</h1><p className="mt-1 text-sm text-neutral-500">{recipes.length} recetas · {cookableIds.size} cocinables ahora</p></header>
-      <RecipeForm />
+      <RecipeForm ingredients={ingredients} />
       <RecipeList recipes={recipes} />
       {recipes.length > 0 ? (
         <div>
