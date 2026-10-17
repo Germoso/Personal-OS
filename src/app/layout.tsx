@@ -24,6 +24,7 @@ const NAV = [
   { href: "/calendar", label: "Calendario" },
   { href: "/projects", label: "Proyectos" },
   { href: "/finance", label: "Finanzas" },
+  { href: "/kitchen", label: "Cocina" },
 ];
 
 export default function RootLayout({
