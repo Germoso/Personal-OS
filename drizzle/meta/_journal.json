@@ -22,6 +22,13 @@
       "when": 1792229842139,
       "tag": "0002_even_jack_murdock",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1792230264327,
+      "tag": "0003_brief_rumiko_fujikawa",
+      "breakpoints": true
     }
   ]
 }
