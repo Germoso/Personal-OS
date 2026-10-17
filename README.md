@@ -4,7 +4,7 @@ A local-first web app to run your personal life: projects, tasks and — in late
 milestones — a calendar and finances. All data lives in a single SQLite file on
 your machine. No accounts, no cloud.
 
-**Status:** milestone 1 (M1) — projects and tasks.
+**Status:** milestone 2 (M2) — internal calendar (events + weekly view) on top of M1.
 
 ## Stack
 
@@ -41,10 +41,11 @@ npm run dev          # http://localhost:3000
 | `npm run db:generate` | Generate a migration after editing a schema |
 | `npm run db:migrate` | Apply pending migrations |
 
-## Views (M1)
+## Views
 
 - **/inbox** — tasks without a project
 - **/hoy** — overdue tasks plus tasks due today (open tasks only)
+- **/calendar** — weekly view (Mon–Sun): events plus dated, open tasks
 - **/projects** — active and archived projects
 - **/projects/[id]** — one project with its tasks
 
@@ -52,7 +53,7 @@ npm run dev          # http://localhost:3000
 
 ```
 src/
-  app/                    routes (inbox, hoy, projects, projects/[id])
+  app/                    routes (inbox, hoy, calendar, projects, projects/[id])
   db/                     sqlite client factory + app singleton
   lib/date.ts             local-day helpers
   modules/tasks/
@@ -61,6 +62,11 @@ src/
     actions.ts            server actions (typed input)
     form-actions.ts       server actions bound to <form> submissions
     components/           task form/list, project form/list
+  modules/calendar/
+    db/schema.ts          events table
+    db/repository.ts      validated reads/writes (pure, db-injected)
+    form-actions.ts       server actions bound to <form> submissions
+    components/           event form
 drizzle/                  generated migrations
 odd/tasks/                feature specs and task log
 ```
@@ -86,7 +92,7 @@ npm test
 | Milestone | Scope |
 | --- | --- |
 | **M1** (done) | Projects and tasks |
-| **M2** | Internal calendar: events and a weekly view; dated tasks show up there |
+| **M2** (done) | Internal calendar: events and a weekly view; dated tasks show up there |
 | **M3** | Finances: accounts, transactions, categories, balance |
 
 Deliberate non-goals for M1: external calendar sync, authentication, cloud
