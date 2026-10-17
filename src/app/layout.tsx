@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
 
+import { ChatPanel } from "@/components/ai/chat-panel";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -55,6 +57,7 @@ export default function RootLayout({
           </div>
         </header>
         <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-8">{children}</main>
+        <ChatPanel />
       </body>
     </html>
   );
