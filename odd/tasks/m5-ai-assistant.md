@@ -51,6 +51,8 @@ L37 — Scope decision (user): "Interno: leer y escribir" (over existing persona
 L38 — Provider decision (user, custom): Runware OpenAI-compatible endpoint, model `deepseek:v4@flash`, apiKey provided by user — stored ONLY in `.env.local`, excluded from this doc, repo history and Engram. (User pasted the raw key in chat; flagged to the user that the key should be rotated if they want.)
 L39 — Autonomy decision (user, verbatim): "que se pueda configurar" → configurable levels (S33).
 L40 — UI decision (user): "Panel flotante en toda la app" → floating panel on every page, conversations persisted (stateless explicitly rejected).
+L41 — Bug (user report): chat "Hola" failed with provider 400: `Function at index 0 has an invalid name: "tasks.listProjects". Only a-z, A-Z, 0-9, underscores, and dashes are allowed.` → renamed all 38 tool names to underscore (`tasks_listProjects`), tests updated (commit 9836bab).
+L42 — User request (verbatim): "NECEISTOU QE EL FORMATO DE RESPUESTA SEA LEGIBLE, CUANDO PONE COSAS EN MARKDOWN WL VISUALIZADOR NO LOS RENDERIZA BIEN" → panel renders assistant answers as Markdown (react-markdown + remark-gfm + remark-breaks), confirmation markers stay mono; README updated.
 
 ## Annex A — Tool surface
 

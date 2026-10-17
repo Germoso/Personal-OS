@@ -2,6 +2,8 @@
 
 import { type FormEvent, type KeyboardEvent, useEffect, useRef, useState } from "react";
 
+import { Markdown } from "@/components/ai/markdown";
+
 import {
   confirmAction,
   getAutonomy,
@@ -195,9 +197,13 @@ export function ChatPanel() {
               ) : (
                 <div
                   key={i}
-                  className={`max-w-[85%] rounded-2xl rounded-bl-md bg-neutral-800 px-3 py-2 text-sm text-neutral-100 ${parsePending(m.content) ? "italic" : ""}`}
+                  className={`max-w-[85%] overflow-hidden rounded-2xl rounded-bl-md bg-neutral-800 px-3 py-2 text-sm text-neutral-100 ${parsePending(m.content) ? "italic" : ""}`}
                 >
-                  {m.content}
+                  {parsePending(m.content) ? (
+                    <code className="block whitespace-pre-wrap font-mono text-xs break-words">{m.content}</code>
+                  ) : (
+                    <Markdown>{m.content}</Markdown>
+                  )}
                 </div>
               ),
             )}

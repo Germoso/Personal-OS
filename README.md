@@ -37,13 +37,17 @@ tools. **`RUNWARE_API_KEY`** (plus optional `RUNWARE_BASE_URL`, `AI_MODEL`,
 `AI_MAX_TOKENS`) go in a local, git-ignored `.env.local` — create it with your
 own Runware key before using the assistant:
 
+A committed template lives at `.env.example` (no secrets inside). Copy it and
+fill in your own key:
+
 ```bash
-touch .env.local   # then add: RUNWARE_API_KEY=<tu key de Runware>
+cp .env.example .env.local   # then edit .env.local with your own Runware key
 ```
 
 The assistant only operates on your own personal OS data (tasks, events,
 accounts, transactions, ingredients, recipes) — it has no access to anything
-else outside the app. Autonomy is configurable from the panel:
+else outside the app. Answers render readable Markdown in the panel (tables,
+lists, code blocks, links). Autonomy is configurable from the panel:
 
 - **Confirmar borrados** (default) — destructive actions (deletes, archives, account deletions) ask for confirmation.
 - **Confirmar cambios** — every mutating action asks for confirmation.
