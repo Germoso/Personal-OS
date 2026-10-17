@@ -44,7 +44,7 @@ Non-goals (not requested): meal planning, nutrition/calories, external recipe im
 - K9 (S25, S26) — Pantry repository + cookability query + tests. Route: inline. Commit: (repository commit)
 - K10 (S28) — Server actions + FormData form actions + tests. Route: inline. Commit: (form-actions commit)
 - K11 (S28) — Kitchen views (summary, ingredients, recipes, recipe detail, shopping, pantry) + navigation. Route: inline. Commit: (views commit)
-- K12 (S29) — README update + final verification. Route: inline. Commit: (pending)
+- K12 (S29) — README update + final verification. Route: inline. Commit: af21263
 
 ## Log
 
