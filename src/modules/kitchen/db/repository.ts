@@ -258,9 +258,30 @@ export function addShoppingItem(db: Db, input: AddShoppingItemInput): ShoppingIt
 export function toggleShoppingItem(db: Db, id: number): ShoppingItem {
   const item = db.select().from(shoppingItems).where(eq(shoppingItems.id, id)).get();
   if (!item) throw new NotFoundError(`Unknown shopping item id: ${id}.`);
+  const newChecked = !item.checked;
+
+  // Sync with pantry: buying an item makes it available at home; un-buying
+  // removes it from the pantry so recipes no longer consider it available.
+  if (item.ingredientId != null) {
+    if (newChecked) {
+      upsertPantryItem(db, {
+        ingredientId: item.ingredientId,
+        quantity: item.quantity / 100,
+        unit: item.unit,
+      });
+    } else {
+      const pantryItem = db
+        .select()
+        .from(pantryItems)
+        .where(eq(pantryItems.ingredientId, item.ingredientId))
+        .get();
+      if (pantryItem) deletePantryItem(db, pantryItem.id);
+    }
+  }
+
   return db
     .update(shoppingItems)
-    .set({ checked: !item.checked, updatedAt: nowIso() })
+    .set({ checked: newChecked, updatedAt: nowIso() })
     .where(eq(shoppingItems.id, id))
     .returning()
     .get();

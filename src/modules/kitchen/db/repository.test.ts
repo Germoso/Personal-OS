@@ -87,6 +87,23 @@ describe("shopping list (S24)", () => {
     repo.clearCheckedShoppingItems(db);
     expect(repo.listShoppingItems(db)).toEqual([]);
   });
+
+  it("syncs pantry when marking as bought", () => {
+    const ing = repo.createIngredient(db, { name: "Harina" });
+    const item = repo.addShoppingItem(db, { ingredientId: ing.id, quantity: 2, unit: "kg" });
+    expect(repo.listPantryItems(db)).toHaveLength(0);
+    repo.toggleShoppingItem(db, item.id);
+    expect(repo.listPantryItems(db)).toHaveLength(1);
+    expect(repo.listPantryItems(db)[0].quantity).toBe(200);
+  });
+
+  it("removes from pantry when un-marking as bought", () => {
+    const ing = repo.createIngredient(db, { name: "Harina" });
+    const item = repo.addShoppingItem(db, { ingredientId: ing.id, quantity: 2, unit: "kg" });
+    repo.toggleShoppingItem(db, item.id); // buy
+    repo.toggleShoppingItem(db, item.id); // un-buy
+    expect(repo.listPantryItems(db)).toHaveLength(0);
+  });
 });
 
 describe("pantry (S25)", () => {
