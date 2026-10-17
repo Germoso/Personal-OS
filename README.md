@@ -53,7 +53,7 @@ npm run dev          # http://localhost:3000
 - **/kitchen** — kitchen summary: ingredient/recipe counts, cookable recipes
 - **/kitchen/ingredients** — ingredient list (also serves as shopping list: mark available/unavailable)
 - **/kitchen/recipes** — recipe list + creation + cookability status
-- **/kitchen/recipes/[id]** — recipe detail with ingredients, edit quantity, instructions, cookability
+- **/kitchen/recipes/[id]** — recipe detail with ingredients (add, edit quantity, remove), instructions, cookability
 - **/projects** — active and archived projects
 - **/projects/[id]** — one project with its tasks
 
