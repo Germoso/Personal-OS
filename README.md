@@ -124,7 +124,6 @@ src/
     form-actions.ts       server actions for the chat panel (send/confirm/settings)
   components/ai/          floating chat panel (client component)
 drizzle/                  generated migrations
-odd/tasks/                feature specs and task log
 ```
 
 The repository is the only place that talks to SQLite. It receives the
