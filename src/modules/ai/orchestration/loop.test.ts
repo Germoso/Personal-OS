@@ -50,10 +50,10 @@ describe("runTurn loop (S36)", () => {
   it("executes a non-destructive tool and feeds the result back to the LLM", async () => {
     const llm = vi
       .fn()
-      .mockResolvedValueOnce(toolCall("tasks.createTask", { title: "Comprar pan" }))
+      .mockResolvedValueOnce(toolCall("tasks_createTask", { title: "Comprar pan" }))
       .mockResolvedValueOnce(answer("Tarea creada."));
     const result = await makeStub(llm, noopExec)();
-    expect(result.executed).toEqual([{ name: "tasks.createTask", ok: true }]);
+    expect(result.executed).toEqual([{ name: "tasks_createTask", ok: true }]);
     expect(llm).toHaveBeenCalledTimes(2);
     // The second call includes the assistant tool-call message and the tool result.
     const secondMessages = llm.mock.calls[1][0] as ChatMessage[];
@@ -64,21 +64,21 @@ describe("runTurn loop (S36)", () => {
   it("asks for confirmation on a destructive tool under ask-on-delete and does not execute it", async () => {
     const llm = vi
       .fn()
-      .mockResolvedValueOnce(toolCall("tasks.deleteTask", { id: 5 }))
+      .mockResolvedValueOnce(toolCall("tasks_deleteTask", { id: 5 }))
       .mockResolvedValue(answer("nunca debería llegar"));
     const execute = vi.fn(noopExec);
     const result = await makeStub(llm, execute)();
-    expect(result.requiresConfirmation).toEqual({ tool: "tasks.deleteTask", args: { id: 5 } });
+    expect(result.requiresConfirmation).toEqual({ tool: "tasks_deleteTask", args: { id: 5 } });
     expect(execute).not.toHaveBeenCalled();
     expect(llm).toHaveBeenCalledTimes(1);
     // The pending action is logged with status "pending".
-    expect(listActions(db, chatId)[0]).toMatchObject({ tool: "tasks.deleteTask", status: "pending" });
+    expect(listActions(db, chatId)[0]).toMatchObject({ tool: "tasks_deleteTask", status: "pending" });
   });
 
   it("executes destructive tools without confirmation under autonomous autonomy", async () => {
     const llm = vi
       .fn()
-      .mockResolvedValueOnce(toolCall("tasks.deleteTask", { id: 5 }))
+      .mockResolvedValueOnce(toolCall("tasks_deleteTask", { id: 5 }))
       .mockResolvedValue(answer("Borrada."));
     const result = await runTurn(db, {
       chatId,
@@ -87,12 +87,12 @@ describe("runTurn loop (S36)", () => {
       llm,
       execute: noopExec,
     });
-    expect(result.executed).toEqual([{ name: "tasks.deleteTask", ok: true }]);
+    expect(result.executed).toEqual([{ name: "tasks_deleteTask", ok: true }]);
     expect(result.requiresConfirmation).toBeNull();
   });
 
   it("asks for confirmation on any mutation under ask-on-mutation, but not on reads", async () => {
-    const mutating = vi.fn().mockResolvedValue(toolCall("tasks.updateTask", { id: 1, title: "x" }));
+    const mutating = vi.fn().mockResolvedValue(toolCall("tasks_updateTask", { id: 1, title: "x" }));
     const mutatingResult = await runTurn(db, {
       chatId,
       messages: [{ role: "user", content: "renombra la tarea 1" }],
@@ -100,11 +100,11 @@ describe("runTurn loop (S36)", () => {
       llm: mutating,
       execute: noopExec,
     });
-    expect(mutatingResult.requiresConfirmation).toEqual({ tool: "tasks.updateTask", args: { id: 1, title: "x" } });
+    expect(mutatingResult.requiresConfirmation).toEqual({ tool: "tasks_updateTask", args: { id: 1, title: "x" } });
 
     const read = vi
       .fn()
-      .mockResolvedValueOnce(toolCall("finance.totalBalance", {}))
+      .mockResolvedValueOnce(toolCall("finance_totalBalance", {}))
       .mockResolvedValue(answer("Tu saldo total es 12345."));
     const readResult = await runTurn(db, {
       chatId,
@@ -114,7 +114,7 @@ describe("runTurn loop (S36)", () => {
       execute: noopExec,
     });
     expect(readResult.requiresConfirmation).toBeNull();
-    expect(readResult.executed).toEqual([{ name: "finance.totalBalance", ok: true }]);
+    expect(readResult.executed).toEqual([{ name: "finance_totalBalance", ok: true }]);
   });
 
   it("feeds unknown tool errors back to the LLM so it can correct", async () => {
@@ -135,22 +135,22 @@ describe("runTurn loop (S36)", () => {
       chatId,
       messages: [{ role: "user", content: "sí, borra" }],
       autonomy: "ask-on-delete",
-      preAuthorized: [{ name: "tasks.deleteTask", args: { id: 5 } }],
+      preAuthorized: [{ name: "tasks_deleteTask", args: { id: 5 } }],
       llm,
       execute,
     });
-    expect(execute).toHaveBeenCalledWith("tasks.deleteTask", { id: 5 });
-    expect(result.executed).toEqual([{ name: "tasks.deleteTask", ok: true }]);
+    expect(execute).toHaveBeenCalledWith("tasks_deleteTask", { id: 5 });
+    expect(result.executed).toEqual([{ name: "tasks_deleteTask", ok: true }]);
     expect(result.content).toBe("Confirmado y ejecutado.");
     // No tools were offered in the post-confirmation call.
     expect(llm.mock.calls[0][1]).toBeUndefined();
-    expect(listActions(db, chatId)[0]).toMatchObject({ tool: "tasks.deleteTask", status: "executed" });
+    expect(listActions(db, chatId)[0]).toMatchObject({ tool: "tasks_deleteTask", status: "executed" });
   });
 
   it("propagates tool failures as structured results the model can read", async () => {
     const llm = vi
       .fn()
-      .mockResolvedValueOnce(toolCall("finance.createTransaction", { accountId: 1, amount: 100 }))
+      .mockResolvedValueOnce(toolCall("finance_createTransaction", { accountId: 1, amount: 100 }))
       .mockResolvedValue(answer("Lo intenté pero falló."));
     const execute: ExecStub = async () => ({ ok: false, error: "Unknown account id: 1." });
     const result = await runTurn(db, {
@@ -163,12 +163,12 @@ describe("runTurn loop (S36)", () => {
     const secondMessages = llm.mock.calls[1][0] as ChatMessage[];
     expect(secondMessages.some((m) => m.role === "tool" && /unknown account id/i.test(m.content ?? ""))).toBe(true);
     expect(result.executed).toEqual([
-      { name: "finance.createTransaction", ok: false, error: "Unknown account id: 1." },
+      { name: "finance_createTransaction", ok: false, error: "Unknown account id: 1." },
     ]);
   });
 
   it("bounded iterations: stops after maxIterations tool rounds", async () => {
-    const llm = vi.fn().mockResolvedValue(toolCall("tasks.createTask", { title: "x" }));
+    const llm = vi.fn().mockResolvedValue(toolCall("tasks_createTask", { title: "x" }));
     const result = await runTurn(db, {
       chatId,
       messages: [{ role: "user", content: "repítelo" }],

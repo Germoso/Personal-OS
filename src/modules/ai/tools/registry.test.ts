@@ -37,7 +37,7 @@ describe("tool registry catalog (S35)", () => {
 
   it("pins every tool to a real exported repository operation", () => {
     for (const tool of AI_TOOLS) {
-      const [module] = tool.name.split(".");
+      const [module] = tool.name.split("_");
       const repo = REPOS[module];
       expect(repo, `repo module for ${tool.name}`).toBeDefined();
       expect(typeof (repo as Record<string, unknown>)[tool.operation], `${tool.name} -> ${tool.operation}`).toBe(
@@ -49,8 +49,8 @@ describe("tool registry catalog (S35)", () => {
 
 describe("executeTool dispatch (S35)", () => {
   it("resolves known tools by name", () => {
-    expect(getTool("tasks.createTask")).toBeDefined();
-    expect(getTool("kitchen.toggleAvailable")?.destructive).toBe(false);
+    expect(getTool("tasks_createTask")).toBeDefined();
+    expect(getTool("kitchen_toggleAvailable")?.destructive).toBe(false);
   });
 
   it("returns a structured error for unknown tools", async () => {

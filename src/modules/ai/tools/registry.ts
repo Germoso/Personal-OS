@@ -16,7 +16,7 @@ import * as tasksRepo from "@/modules/tasks/db/repository";
  */
 
 export interface ToolDef {
-  /** Dotted name the LLM calls, e.g. "tasks.createTask". */
+  /** Name the LLM calls, e.g. "tasks_createTask" (underscore: the provider rejects dots in function names). */
   name: string;
   /** Prompt for the LLM: what it does, parameter units and formats. */
   description: string;
@@ -88,7 +88,7 @@ const prop = (kind: string, description: string, extra: Record<string, unknown> 
 export const AI_TOOLS: ToolDef[] = [
   /* --------------------------------- tasks --------------------------------- */
   {
-    name: "tasks.listProjects",
+    name: "tasks_listProjects",
     description: "List all projects with their status (active/archived).",
     parameters: obj("ListProjects", {}),
     destructive: false,
@@ -97,7 +97,7 @@ export const AI_TOOLS: ToolDef[] = [
     run: () => tasksRepo.listProjects(db),
   },
   {
-    name: "tasks.createProject",
+    name: "tasks_createProject",
     description: "Create a project. name is required.",
     parameters: obj("CreateProject", { name: prop("string", "Project name", { minLength: 1 }) }, ["name"]),
     destructive: false,
@@ -105,7 +105,7 @@ export const AI_TOOLS: ToolDef[] = [
     run: (a) => tasksRepo.createProject(db, { name: (a.name as string) ?? "", description: str(a, "description") }),
   },
   {
-    name: "tasks.updateProject",
+    name: "tasks_updateProject",
     description: "Update a project's name/description. Only provided fields change.",
     parameters: obj("UpdateProject", {
       id: prop("integer", "Project id"),
@@ -117,7 +117,7 @@ export const AI_TOOLS: ToolDef[] = [
     run: (a) => tasksRepo.updateProject(db, { id: num(a, "id"), ...pick(a, ["name", "description"]) }),
   },
   {
-    name: "tasks.archiveProject",
+    name: "tasks_archiveProject",
     description: "Archive a project (hides it from the default project list). Reversible with unarchiveProject.",
     parameters: obj("ArchiveProject", { id: prop("integer", "Project id") }, ["id"]),
     destructive: true,
@@ -125,7 +125,7 @@ export const AI_TOOLS: ToolDef[] = [
     run: (a) => tasksRepo.archiveProject(db, num(a, "id")),
   },
   {
-    name: "tasks.unarchiveProject",
+    name: "tasks_unarchiveProject",
     description: "Unarchive a project so it shows again.",
     parameters: obj("UnarchiveProject", { id: prop("integer", "Project id") }, ["id"]),
     destructive: false,
@@ -133,7 +133,7 @@ export const AI_TOOLS: ToolDef[] = [
     run: (a) => tasksRepo.unarchiveProject(db, num(a, "id")),
   },
   {
-    name: "tasks.deleteProject",
+    name: "tasks_deleteProject",
     description: "Permanently delete a project. Tasks assigned to it detach (project becomes inbox?) — check data. Destructive.",
     parameters: obj("DeleteProject", { id: prop("integer", "Project id") }, ["id"]),
     destructive: true,
@@ -141,8 +141,8 @@ export const AI_TOOLS: ToolDef[] = [
     run: (a) => tasksRepo.deleteProject(db, num(a, "id")),
   },
   {
-    name: "tasks.listTasks",
-    description: "List tasks. Optional filters: status (pending|in_progress|done), projectId, dueDate (YYYY-MM-DD).",
+    name: "tasks_listTasks",
+    description: "List tasks_ Optional filters: status (pending|in_progress|done), projectId, dueDate (YYYY-MM-DD).",
     parameters: obj("ListTasks", {
       status: prop("string", "pending | in_progress | done"),
       projectId: prop("integer", "Project id"),
@@ -163,7 +163,7 @@ export const AI_TOOLS: ToolDef[] = [
     },
   },
   {
-    name: "tasks.createTask",
+    name: "tasks_createTask",
     description:
       "Create a task. title required. priority: high|medium|low. dueDate YYYY-MM-DD. projectId optional (omit for inbox).",
     parameters: obj(
@@ -189,7 +189,7 @@ export const AI_TOOLS: ToolDef[] = [
       }),
   },
   {
-    name: "tasks.updateTask",
+    name: "tasks_updateTask",
     description:
       "Update a task. Only provided fields change. status: pending|in_progress|done. priority: high|medium|low. dueDate null clears it.",
     parameters: obj(
@@ -213,7 +213,7 @@ export const AI_TOOLS: ToolDef[] = [
       }),
   },
   {
-    name: "tasks.setTaskStatus",
+    name: "tasks_setTaskStatus",
     description: "Move a task to a new status: pending | in_progress | done.",
     parameters: obj(
       "SetTaskStatus",
@@ -232,7 +232,7 @@ export const AI_TOOLS: ToolDef[] = [
       }),
   },
   {
-    name: "tasks.deleteTask",
+    name: "tasks_deleteTask",
     description: "Permanently delete a task. Destructive.",
     parameters: obj("DeleteTask", { id: prop("integer", "Task id") }, ["id"]),
     destructive: true,
@@ -242,7 +242,7 @@ export const AI_TOOLS: ToolDef[] = [
 
   /* -------------------------------- calendar -------------------------------- */
   {
-    name: "calendar.listEvents",
+    name: "calendar_listEvents",
     description:
       "List calendar events between two dates inclusive (YYYY-MM-DD). Defaults to last 7 days to next 30 days when omitted.",
     parameters: obj("ListEvents", {
@@ -259,7 +259,7 @@ export const AI_TOOLS: ToolDef[] = [
     },
   },
   {
-    name: "calendar.createEvent",
+    name: "calendar_createEvent",
     description:
       "Create a calendar event. title and date (YYYY-MM-DD) required. startTime/endTime in HH:MM (24h); omit both for an all-day event.",
     parameters: obj(
@@ -285,7 +285,7 @@ export const AI_TOOLS: ToolDef[] = [
       }),
   },
   {
-    name: "calendar.updateEvent",
+    name: "calendar_updateEvent",
     description:
       "Update a calendar event. Only provided fields change; startTime/endTime null clears them (all-day).",
     parameters: obj(
@@ -311,7 +311,7 @@ export const AI_TOOLS: ToolDef[] = [
       }),
   },
   {
-    name: "calendar.deleteEvent",
+    name: "calendar_deleteEvent",
     description: "Permanently delete a calendar event. Destructive.",
     parameters: obj("DeleteEvent", { id: prop("integer", "Event id") }, ["id"]),
     destructive: true,
@@ -321,7 +321,7 @@ export const AI_TOOLS: ToolDef[] = [
 
   /* --------------------------------- finance -------------------------------- */
   {
-    name: "finance.listAccounts",
+    name: "finance_listAccounts",
     description: "List finance accounts. Optional status: active|archived.",
     parameters: obj("ListAccounts", { status: prop("string", "active | archived") }),
     destructive: false,
@@ -330,7 +330,7 @@ export const AI_TOOLS: ToolDef[] = [
     run: (a) => financeRepo.listAccounts(db, str(a, "status") as never),
   },
   {
-    name: "finance.createAccount",
+    name: "finance_createAccount",
     description:
       "Create a finance account. name required. type: checking|savings|cash|credit. currency ISO (default ARS). openingBalance in integer cents.",
     parameters: obj(
@@ -354,7 +354,7 @@ export const AI_TOOLS: ToolDef[] = [
       }),
   },
   {
-    name: "finance.updateAccount",
+    name: "finance_updateAccount",
     description: "Update a finance account. Only provided fields change.",
     parameters: obj(
       "UpdateAccount",
@@ -376,7 +376,7 @@ export const AI_TOOLS: ToolDef[] = [
       }),
   },
   {
-    name: "finance.archiveAccount",
+    name: "finance_archiveAccount",
     description: "Archive an account (hidden from the default list). Reversible.",
     parameters: obj("ArchiveAccount", { id: prop("integer", "Account id") }, ["id"]),
     destructive: true,
@@ -384,7 +384,7 @@ export const AI_TOOLS: ToolDef[] = [
     run: (a) => financeRepo.archiveAccount(db, num(a, "id")),
   },
   {
-    name: "finance.unarchiveAccount",
+    name: "finance_unarchiveAccount",
     description: "Unarchive an account.",
     parameters: obj("UnarchiveAccount", { id: prop("integer", "Account id") }, ["id"]),
     destructive: false,
@@ -392,7 +392,7 @@ export const AI_TOOLS: ToolDef[] = [
     run: (a) => financeRepo.unarchiveAccount(db, num(a, "id")),
   },
   {
-    name: "finance.deleteAccount",
+    name: "finance_deleteAccount",
     description:
       "Permanently delete an account. All its transactions are deleted too (cascade). Destructive.",
     parameters: obj("DeleteAccount", { id: prop("integer", "Account id") }, ["id"]),
@@ -401,7 +401,7 @@ export const AI_TOOLS: ToolDef[] = [
     run: (a) => financeRepo.deleteAccount(db, num(a, "id")),
   },
   {
-    name: "finance.listCategories",
+    name: "finance_listCategories",
     description: "List transaction categories. Optional kind: income|expense.",
     parameters: obj("ListCategories", { kind: prop("string", "income | expense") }),
     destructive: false,
@@ -410,7 +410,7 @@ export const AI_TOOLS: ToolDef[] = [
     run: (a) => financeRepo.listCategories(db, str(a, "kind") as never),
   },
   {
-    name: "finance.createCategory",
+    name: "finance_createCategory",
     description:
       "Create a transaction category. name and kind (income|expense) required. color optional hex like #6366f1.",
     parameters: obj(
@@ -432,7 +432,7 @@ export const AI_TOOLS: ToolDef[] = [
       }),
   },
   {
-    name: "finance.updateCategory",
+    name: "finance_updateCategory",
     description: "Update a category. Only provided fields change.",
     parameters: obj(
       "UpdateCategory",
@@ -450,7 +450,7 @@ export const AI_TOOLS: ToolDef[] = [
       financeRepo.updateCategory(db, { id: num(a, "id"), ...pick(a, ["name", "kind", "color"]) }),
   },
   {
-    name: "finance.deleteCategory",
+    name: "finance_deleteCategory",
     description:
       "Permanently delete a category; existing transactions keep their history (category becomes empty). Destructive.",
     parameters: obj("DeleteCategory", { id: prop("integer", "Category id") }, ["id"]),
@@ -459,7 +459,7 @@ export const AI_TOOLS: ToolDef[] = [
     run: (a) => financeRepo.deleteCategory(db, num(a, "id")),
   },
   {
-    name: "finance.listTransactions",
+    name: "finance_listTransactions",
     description: "List recent transactions (newest first). No filters in MVP.",
     parameters: obj("ListTransactions", {}),
     destructive: false,
@@ -468,7 +468,7 @@ export const AI_TOOLS: ToolDef[] = [
     run: () => financeRepo.recentTransactions(db, 50),
   },
   {
-    name: "finance.createTransaction",
+    name: "finance_createTransaction",
     description:
       "Create a transaction. accountId, amount (integer cents; negative for expense, positive for income) and date (YYYY-MM-DD) required. categoryId optional but its kind must match the sign.",
     parameters: obj(
@@ -494,7 +494,7 @@ export const AI_TOOLS: ToolDef[] = [
       }),
   },
   {
-    name: "finance.updateTransaction",
+    name: "finance_updateTransaction",
     description: "Update a transaction. Only provided fields change.",
     parameters: obj(
       "UpdateTransaction",
@@ -517,7 +517,7 @@ export const AI_TOOLS: ToolDef[] = [
       }),
   },
   {
-    name: "finance.deleteTransaction",
+    name: "finance_deleteTransaction",
     description: "Permanently delete a transaction. Destructive.",
     parameters: obj("DeleteTransaction", { id: prop("integer", "Transaction id") }, ["id"]),
     destructive: true,
@@ -525,7 +525,7 @@ export const AI_TOOLS: ToolDef[] = [
     run: (a) => financeRepo.deleteTransaction(db, num(a, "id")),
   },
   {
-    name: "finance.accountBalance",
+    name: "finance_accountBalance",
     description: "Current balance of one account, in integer cents.",
     parameters: obj("AccountBalance", { accountId: prop("integer", "Account id") }, ["accountId"]),
     destructive: false,
@@ -534,7 +534,7 @@ export const AI_TOOLS: ToolDef[] = [
     run: (a) => financeRepo.accountBalance(db, num(a, "accountId")),
   },
   {
-    name: "finance.totalBalance",
+    name: "finance_totalBalance",
     description: "Total balance across all active accounts, in integer cents.",
     parameters: obj("TotalBalance", {}),
     destructive: false,
@@ -545,7 +545,7 @@ export const AI_TOOLS: ToolDef[] = [
 
   /* --------------------------------- kitchen -------------------------------- */
   {
-    name: "kitchen.listIngredients",
+    name: "kitchen_listIngredients",
     description: "List all ingredients (the shopping list). available=true means you have it at home.",
     parameters: obj("ListIngredients", {}),
     destructive: false,
@@ -554,7 +554,7 @@ export const AI_TOOLS: ToolDef[] = [
     run: () => kitchenRepo.listIngredients(db),
   },
   {
-    name: "kitchen.createIngredient",
+    name: "kitchen_createIngredient",
     description:
       "Create an ingredient (adds it to the shopping list unavailable by default). name required, unit default 'un', category optional.",
     parameters: obj(
@@ -578,7 +578,7 @@ export const AI_TOOLS: ToolDef[] = [
       }),
   },
   {
-    name: "kitchen.updateIngredient",
+    name: "kitchen_updateIngredient",
     description: "Update an ingredient. Only provided fields change.",
     parameters: obj(
       "UpdateIngredient",
@@ -600,7 +600,7 @@ export const AI_TOOLS: ToolDef[] = [
       }),
   },
   {
-    name: "kitchen.toggleAvailable",
+    name: "kitchen_toggleAvailable",
     description: "Toggle whether an ingredient is available at home. The list doubles as the shopping list.",
     parameters: obj("ToggleAvailable", { id: prop("integer", "Ingredient id") }, ["id"]),
     destructive: false,
@@ -608,7 +608,7 @@ export const AI_TOOLS: ToolDef[] = [
     run: (a) => kitchenRepo.toggleAvailable(db, num(a, "id")),
   },
   {
-    name: "kitchen.deleteIngredient",
+    name: "kitchen_deleteIngredient",
     description: "Permanently delete an ingredient. Fails if a recipe still uses it. Destructive.",
     parameters: obj("DeleteIngredient", { id: prop("integer", "Ingredient id") }, ["id"]),
     destructive: true,
@@ -616,7 +616,7 @@ export const AI_TOOLS: ToolDef[] = [
     run: (a) => kitchenRepo.deleteIngredient(db, num(a, "id")),
   },
   {
-    name: "kitchen.listRecipes",
+    name: "kitchen_listRecipes",
     description: "List all recipes.",
     parameters: obj("ListRecipes", {}),
     destructive: false,
@@ -625,7 +625,7 @@ export const AI_TOOLS: ToolDef[] = [
     run: () => kitchenRepo.listRecipes(db),
   },
   {
-    name: "kitchen.listRecipesWithCookability",
+    name: "kitchen_listRecipesWithCookability",
     description: "List recipes with cookability: each shows which of its ingredients are missing (not available).",
     parameters: obj("ListRecipesWithCookability", {}),
     destructive: false,
@@ -634,9 +634,9 @@ export const AI_TOOLS: ToolDef[] = [
     run: () => kitchenRepo.listRecipesWithCookability(db),
   },
   {
-    name: "kitchen.createRecipe",
+    name: "kitchen_createRecipe",
     description:
-      "Create a recipe. title required. servings positive integer default 1. Optionally add ingredients afterwards with kitchen.addRecipeIngredient.",
+      "Create a recipe. title required. servings positive integer default 1. Optionally add ingredients afterwards with kitchen_addRecipeIngredient.",
     parameters: obj(
       "CreateRecipe",
       {
@@ -658,7 +658,7 @@ export const AI_TOOLS: ToolDef[] = [
       }),
   },
   {
-    name: "kitchen.updateRecipe",
+    name: "kitchen_updateRecipe",
     description: "Update a recipe. Only provided fields change.",
     parameters: obj(
       "UpdateRecipe",
@@ -677,7 +677,7 @@ export const AI_TOOLS: ToolDef[] = [
       kitchenRepo.updateRecipe(db, { id: num(a, "id"), ...pick(a, ["title", "description", "servings", "instructions"]) }),
   },
   {
-    name: "kitchen.deleteRecipe",
+    name: "kitchen_deleteRecipe",
     description: "Permanently delete a recipe. Destructive.",
     parameters: obj("DeleteRecipe", { id: prop("integer", "Recipe id") }, ["id"]),
     destructive: true,
@@ -685,7 +685,7 @@ export const AI_TOOLS: ToolDef[] = [
     run: (a) => kitchenRepo.deleteRecipe(db, num(a, "id")),
   },
   {
-    name: "kitchen.listRecipeIngredients",
+    name: "kitchen_listRecipeIngredients",
     description: "List the ingredients of one recipe (with names and units).",
     parameters: obj("ListRecipeIngredients", { recipeId: prop("integer", "Recipe id") }, ["recipeId"]),
     destructive: false,
@@ -694,7 +694,7 @@ export const AI_TOOLS: ToolDef[] = [
     run: (a) => kitchenRepo.listRecipeIngredients(db, num(a, "recipeId")),
   },
   {
-    name: "kitchen.addRecipeIngredient",
+    name: "kitchen_addRecipeIngredient",
     description:
       "Add an ingredient to a recipe. recipeId and ingredientId required. quantity is scaled ×100 (50 = 0.5). unit overrides the ingredient unit.",
     parameters: obj(
@@ -718,7 +718,7 @@ export const AI_TOOLS: ToolDef[] = [
       }),
   },
   {
-    name: "kitchen.updateRecipeIngredient",
+    name: "kitchen_updateRecipeIngredient",
     description: "Update a recipe ingredient quantity/unit/ingredient. Only provided fields change.",
     parameters: obj(
       "UpdateRecipeIngredient",
@@ -740,7 +740,7 @@ export const AI_TOOLS: ToolDef[] = [
       }),
   },
   {
-    name: "kitchen.removeRecipeIngredient",
+    name: "kitchen_removeRecipeIngredient",
     description: "Remove an ingredient from a recipe. Destructive (re-add with addRecipeIngredient).",
     parameters: obj("RemoveRecipeIngredient", { id: prop("integer", "Recipe ingredient id") }, ["id"]),
     destructive: true,

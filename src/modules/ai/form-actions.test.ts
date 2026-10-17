@@ -57,40 +57,40 @@ describe("sendMessage (S37)", () => {
   });
 
   it("returns a pending confirmation for destructive tools under the default autonomy and stores the prompt", async () => {
-    const llm = vi.fn(async () => toolCall("tasks.deleteTask", { id: 5 }));
+    const llm = vi.fn(async () => toolCall("tasks_deleteTask", { id: 5 }));
     const execute = vi.fn(execOk);
     const result = await sendMessage({ chatId: null, content: "borra la tarea 5" }, deps(llm as never, execute));
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.data.pending).toEqual({ tool: "tasks.deleteTask", args: { id: 5 } });
+    expect(result.data.pending).toEqual({ tool: "tasks_deleteTask", args: { id: 5 } });
     expect(result.data.assistantContent).toBeNull();
     // The assistant message holds the confirmation marker.
     const messages = listMessages(db, result.data.chatId);
-    expect(messages[1].content).toMatch(/^⏳ Confirmar acción: tasks\.deleteTask/);
+    expect(messages[1].content).toMatch(/^⏳ Confirmar acción: tasks_deleteTask/);
     expect(execute).not.toHaveBeenCalled();
     // Audit log records the pending action.
-    expect(listActions(db, result.data.chatId)[0]).toMatchObject({ tool: "tasks.deleteTask", status: "pending" });
+    expect(listActions(db, result.data.chatId)[0]).toMatchObject({ tool: "tasks_deleteTask", status: "pending" });
   });
 });
 
 describe("confirmAction / rejectAction (S37)", () => {
   it("confirms and executes a previously pending action", async () => {
-    const send = await sendMessage({ chatId: null, content: "borra la tarea 5" }, deps(vi.fn(async () => toolCall("tasks.deleteTask", { id: 5 })) as never));
+    const send = await sendMessage({ chatId: null, content: "borra la tarea 5" }, deps(vi.fn(async () => toolCall("tasks_deleteTask", { id: 5 })) as never));
     if (!send.ok) throw new Error("send failed");
     const chatId = send.data.chatId;
     const llm = vi.fn(async () => answer("Listo, borrada."));
     const execute = vi.fn(execOk);
-    const confirmed = await confirmAction({ chatId, tool: "tasks.deleteTask", args: { id: 5 } }, deps(llm as never, execute));
+    const confirmed = await confirmAction({ chatId, tool: "tasks_deleteTask", args: { id: 5 } }, deps(llm as never, execute));
     expect(confirmed.ok).toBe(true);
     if (!confirmed.ok) return;
-    expect(execute).toHaveBeenCalledWith("tasks.deleteTask", { id: 5 });
+    expect(execute).toHaveBeenCalledWith("tasks_deleteTask", { id: 5 });
     const messages = listMessages(db, chatId);
     expect(messages[messages.length - 1]!).toMatchObject({ role: "assistant", content: "Listo, borrada." });
     expect(listActions(db, chatId)[0].status).toBe("executed");
   });
 
   it("rejects the pending action and records it in the audit log", async () => {
-    const send = await sendMessage({ chatId: null, content: "borra la tarea 5" }, deps(vi.fn(async () => toolCall("tasks.deleteTask", { id: 5 })) as never));
+    const send = await sendMessage({ chatId: null, content: "borra la tarea 5" }, deps(vi.fn(async () => toolCall("tasks_deleteTask", { id: 5 })) as never));
     if (!send.ok) throw new Error("send failed");
     const chatId = send.data.chatId;
     const rejected = await rejectAction(chatId, { db });
