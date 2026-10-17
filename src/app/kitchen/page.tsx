@@ -60,7 +60,6 @@ export default async function KitchenPage() {
         <a href="/kitchen/ingredients" className="rounded border border-neutral-700 px-3 py-1.5 text-neutral-300 hover:text-neutral-100">Ingredientes</a>
         <a href="/kitchen/recipes" className="rounded border border-neutral-700 px-3 py-1.5 text-neutral-300 hover:text-neutral-100">Recetas</a>
         <a href="/kitchen/shopping" className="rounded border border-neutral-700 px-3 py-1.5 text-neutral-300 hover:text-neutral-100">Compras</a>
-        <a href="/kitchen/pantry" className="rounded border border-neutral-700 px-3 py-1.5 text-neutral-300 hover:text-neutral-100">Despensa</a>
       </nav>
     </section>
   );

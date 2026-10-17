@@ -25,7 +25,7 @@ S26 — "Available recipes" (from S20): a recipe is cookable when every one of i
 
 S27 — "Generate shopping list from recipe": a button on a recipe adds its ingredients to the shopping list, summing quantities when the same ingredient already exists as an unchecked item.
 
-S28 — Views: `/kitchen` summary (pantry count, shopping pending count, cookable recipes). `/kitchen/ingredients` CRUD. `/kitchen/recipes` list + create. `/kitchen/recipes/[id]` detail with ingredients, instructions, "add to shopping list" button, cookability badge. `/kitchen/shopping` checklist with toggle. `/kitchen/pantry` CRUD for pantry items.
+S28 — Views: `/kitchen` summary (shopping pending count, cookable recipes). `/kitchen/ingredients` CRUD. `/kitchen/recipes` list + create. `/kitchen/recipes/[id]` detail with ingredients, instructions, "add to shopping list" button, cookability badge. `/kitchen/shopping` checklist with toggle. Pantry is internal only (synced automatically from shopping list).
 
 S29 — Verification: tests for all schemas, repositories (validation, CRUD, queries, cookability, shopping generation), server actions, FormData form actions, and HTTP smoke.
 
@@ -52,3 +52,4 @@ L30 — User request (verbatim): "BIEN, AHORA HAZ UN MODULO QUE SEA PARA LA COCI
 L31 — User addition (verbatim): "Si, tambien quiero ver las recetas disponibles segun los ingredientes que hay".
 L32 — Plan decision: M4 is a new domain module (`src/modules/kitchen`) with its own Drizzle schema file, reusing shared SQLite client, validation/error-mapping conventions, `instant = false` rendering strategy, and the timestamps column helper.
 L33 — Entity decision (architect, from S20/S21): five entities (ingredients, recipes, recipe_ingredients, shopping_items, pantry_items). Quantities stored as integer scaled ×100 to support decimals (0.5 kg). Balance/cookability is derived, never stored.
+L34 — UX decision (user): marking a shopping item as bought automatically adds it to the pantry (available for recipes); un-marking removes it from the pantry. The pantry view still allows manual quantity adjustments.

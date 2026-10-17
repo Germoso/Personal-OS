@@ -54,8 +54,7 @@ npm run dev          # http://localhost:3000
 - **/kitchen/ingredients** — CRUD for ingredients
 - **/kitchen/recipes** — recipe list + creation + cookability status
 - **/kitchen/recipes/[id]** — recipe detail with ingredients, instructions, add-to-shopping-list
-- **/kitchen/shopping** — shopping checklist with toggle
-- **/kitchen/pantry** — pantry management (ingredients available at home)
+- **/kitchen/shopping** — shopping checklist with toggle (buying an item adds it to the pantry automatically)
 - **/projects** — active and archived projects
 - **/projects/[id]** — one project with its tasks
 
