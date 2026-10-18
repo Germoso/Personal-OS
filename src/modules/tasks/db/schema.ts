@@ -6,7 +6,7 @@ export const PROJECT_STATUSES = ["active", "archived"] as const;
 export const TASK_STATUSES = ["pending", "in_progress", "done"] as const;
 export const TASK_PRIORITIES = ["high", "medium", "low"] as const;
 
-export const DEFAULT_PROJECT_COLOR = "#6366f1";
+export const DEFAULT_PROJECT_COLOR = "#e8a653";
 
 export const projects = sqliteTable("projects", {
   id: integer("id").primaryKey({ autoIncrement: true }),

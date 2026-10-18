@@ -1,26 +1,92 @@
 @import "tailwindcss";
 
+/* ============================================================
+   Guía de estilos — portada desde personal-os-chat.html (mockup)
+   Grafito cálido + un único acento ámbar. La paleta está mapeada
+   sobre los tokens de Tailwind (neutral/emerald/red/amber/indigo)
+   para que toda la app herede el estilo sin retocar componentes.
+   ============================================================ */
+
+@theme {
+  /* --- grafito cálido --- */
+  --color-neutral-50: #faf8f4;
+  --color-neutral-100: #f1ece2;
+  --color-neutral-200: #e6dfd1;
+  --color-neutral-300: #c9c0b0;
+  --color-neutral-400: #9d9484;
+  --color-neutral-500: #6e675c;
+  --color-neutral-600: #57514a;
+  --color-neutral-700: #352f26;
+  --color-neutral-800: #2a251e;
+  --color-neutral-900: #16130f;
+  --color-neutral-950: #0e0c0a;
+
+  /* --- ámbar: acento único --- */
+  --color-amber-400: #e8a653;
+  --color-amber-500: #d18e3a;
+  --color-amber-600: #a96f2a;
+  --color-amber-700: #7c5120;
+  --color-amber-800: #573817;
+  --color-amber-900: #35220d;
+
+  /* --- verde (bueno) / rojo (peligro) --- */
+  --color-emerald-400: #93b27a;
+  --color-emerald-500: #7a9a63;
+  --color-emerald-600: #6a8a55;
+  --color-emerald-700: #526b41;
+  --color-emerald-800: #3a4c2e;
+  --color-emerald-900: #26321e;
+
+  --color-red-400: #d9705b;
+  --color-red-500: #c55c49;
+  --color-red-600: #a84a3a;
+  --color-red-700: #7a3529;
+  --color-red-800: #4f2119;
+  --color-red-900: #331510;
+  --color-red-950: #1f0d0a;
+
+  /* --- indigo → ámbar: el acento por defecto pasa a ser el ámbar
+         (anillos de foco, burbujas del asistente, código) --- */
+  --color-indigo-200: #f2cf9c;
+  --color-indigo-300: #eebd78;
+  --color-indigo-400: #eab05f;
+  --color-indigo-500: #e8a653;
+  --color-indigo-600: #c98a3a;
+  --color-indigo-700: #a96f2a;
+
+  /* --- radios redondeados tipo mockup --- */
+  --radius-md: 0.5rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --radius: 0.625rem;
+
+  /* --- tipografía --- */
+  --font-sans: var(--font-sora), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-disp: var(--font-instrument), Georgia, "Times New Roman", serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #0e0c0a;
+  --foreground: #f1ece2;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+/* Títulos de página en serif de display, como el hero del mockup */
+h1 {
+  font-family: var(--font-disp);
+  font-weight: 400;
+  letter-spacing: 0.005em;
+}
+
+::selection {
+  background: rgba(232, 166, 83, 0.35);
 }

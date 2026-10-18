@@ -87,7 +87,7 @@ export default async function CalendarPage({
     <section className="flex flex-col gap-6">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold">Calendario</h1>
+          <h1 className="text-3xl font-normal">Calendario</h1>
           <p className="mt-1 text-sm text-neutral-500">
             Semana del {start} al {end}
           </p>

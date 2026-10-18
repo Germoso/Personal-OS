@@ -17,7 +17,7 @@ export default async function KitchenPage() {
   return (
     <section className="flex flex-col gap-6">
       <header>
-        <h1 className="text-xl font-semibold">Cocina</h1>
+        <h1 className="text-3xl font-normal">Cocina</h1>
         <p className="mt-1 text-sm text-neutral-500">
           {ingredients.length} ingredientes ({availableCount} disponibles) · {recipes.length} recetas · {cookableCount} cocinables ahora
         </p>

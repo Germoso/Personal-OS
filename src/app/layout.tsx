@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Instrument_Serif, Sora } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
 
 import { ChatPanel } from "@/components/ai/chat-panel";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const sora = Sora({
+  variable: "--font-sora",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const instrument = Instrument_Serif({
+  variable: "--font-instrument",
+  weight: "400",
   subsets: ["latin"],
 });
 
@@ -37,11 +38,11 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${sora.variable} ${instrument.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-neutral-950 text-neutral-100">
-        <header className="border-b border-neutral-800 px-6 py-4">
-          <div className="mx-auto flex max-w-4xl items-center gap-6">
+        <header className="sticky top-4 z-40 mx-auto mt-4 w-full max-w-4xl px-4">
+          <div className="flex items-center gap-6 rounded-2xl border border-neutral-800 bg-neutral-900/85 px-6 py-3 shadow-lg shadow-black/25 backdrop-blur">
             <span className="text-sm font-semibold tracking-wide">Personal OS</span>
             <nav className="flex gap-4 text-sm text-neutral-400">
               {NAV.map((item) => (

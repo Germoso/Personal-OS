@@ -109,7 +109,7 @@ describe("updateAccount / deleteAccount (S11)", () => {
 describe("createCategory (S12)", () => {
   it("creates a category with defaults", () => {
     const category = repo.createCategory(db, { name: "Comida", kind: "expense" });
-    expect(category).toMatchObject({ name: "Comida", kind: "expense", color: "#6366f1" });
+    expect(category).toMatchObject({ name: "Comida", kind: "expense", color: "#e8a653" });
   });
 
   it("rejects a blank name", () => {

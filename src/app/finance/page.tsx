@@ -20,7 +20,7 @@ export default async function FinancePage() {
   return (
     <section className="flex flex-col gap-6">
       <header>
-        <h1 className="text-xl font-semibold">Finanzas</h1>
+        <h1 className="text-3xl font-normal">Finanzas</h1>
         <p className="mt-1 text-sm text-neutral-500">
           Balance total:{" "}
           <span className={total >= 0 ? "text-emerald-400" : "text-red-400"}>

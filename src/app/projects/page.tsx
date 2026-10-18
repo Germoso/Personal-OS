@@ -17,7 +17,7 @@ export default async function ProjectsPage() {
   return (
     <section className="flex flex-col gap-6">
       <header>
-        <h1 className="text-xl font-semibold">Proyectos</h1>
+        <h1 className="text-3xl font-normal">Proyectos</h1>
         <p className="mt-1 text-sm text-neutral-500">
           Agrupa tus tareas por área de trabajo o de vida.
         </p>

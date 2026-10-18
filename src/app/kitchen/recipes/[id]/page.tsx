@@ -31,7 +31,7 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
     <section className="flex flex-col gap-6">
       <header>
         <Link href="/kitchen/recipes" className="text-xs text-neutral-500 hover:text-neutral-300">← Recetas</Link>
-        <h1 className="mt-2 text-xl font-semibold">{recipe.title}</h1>
+        <h1 className="mt-2 text-3xl font-normal">{recipe.title}</h1>
         {recipe.description ? <p className="mt-1 text-sm text-neutral-500">{recipe.description}</p> : null}
         <p className="mt-1 text-xs text-neutral-500">{recipe.servings} porción(es)</p>
         {cookability?.cookable ? (

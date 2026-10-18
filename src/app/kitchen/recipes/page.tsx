@@ -16,7 +16,7 @@ export default async function KitchenRecipesPage() {
 
   return (
     <section className="flex flex-col gap-6">
-      <header><h1 className="text-xl font-semibold">Recetas</h1><p className="mt-1 text-sm text-neutral-500">{recipes.length} recetas · {cookableIds.size} cocinables ahora</p></header>
+      <header><h1 className="text-3xl font-normal">Recetas</h1><p className="mt-1 text-sm text-neutral-500">{recipes.length} recetas · {cookableIds.size} cocinables ahora</p></header>
       <RecipeForm ingredients={ingredients} />
       <RecipeList recipes={recipes} />
       {recipes.length > 0 ? (

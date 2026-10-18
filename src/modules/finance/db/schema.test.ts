@@ -51,7 +51,7 @@ describe("categories table (S12)", () => {
     expect(row).toMatchObject({
       name: "Comida",
       kind: "expense",
-      color: "#6366f1",
+      color: "#e8a653",
     });
   });
 

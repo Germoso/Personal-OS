@@ -42,7 +42,7 @@ export default async function ProjectDetailPage({
             className="h-3 w-3 rounded-full"
             style={{ backgroundColor: project.color }}
           />
-          <h1 className="text-xl font-semibold">{project.name}</h1>
+          <h1 className="text-3xl font-normal">{project.name}</h1>
           {project.status === "archived" ? (
             <span className="rounded border border-neutral-700 px-2 py-0.5 text-xs text-neutral-400">
               Archivado

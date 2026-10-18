@@ -12,7 +12,7 @@ export default async function KitchenIngredientsPage() {
   const ingredients = repo.listIngredients(db);
   return (
     <section className="flex flex-col gap-6">
-      <header><h1 className="text-xl font-semibold">Ingredientes</h1><p className="mt-1 text-sm text-neutral-500">Vocabulario compartido entre recetas, compras y despensa.</p></header>
+      <header><h1 className="text-3xl font-normal">Ingredientes</h1><p className="mt-1 text-sm text-neutral-500">Vocabulario compartido entre recetas, compras y despensa.</p></header>
       <IngredientForm />
       <IngredientList ingredients={ingredients} />
     </section>

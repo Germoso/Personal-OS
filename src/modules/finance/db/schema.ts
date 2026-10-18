@@ -7,8 +7,8 @@ export const ACCOUNT_STATUSES = ["active", "archived"] as const;
 export const TRANSACTION_STATUSES = ["cleared", "pending"] as const;
 export const CATEGORY_KINDS = ["income", "expense"] as const;
 
-export const DEFAULT_ACCOUNT_COLOR = "#6366f1";
-export const DEFAULT_CATEGORY_COLOR = "#6366f1";
+export const DEFAULT_ACCOUNT_COLOR = "#e8a653";
+export const DEFAULT_CATEGORY_COLOR = "#e8a653";
 
 export const accounts = sqliteTable(
   "accounts",
